@@ -157,7 +157,10 @@ export default function App() {
 
   return (
     <div>
-      <Interceptor />
+      <ThemeProvider theme={darkMode ? themeDark : theme}>
+        <CssBaseline />
+        <Interceptor />
+      </ThemeProvider>
       {!isLogin ? (
         <ThemeProvider theme={darkMode ? themeDark : theme}>
           <CssBaseline />

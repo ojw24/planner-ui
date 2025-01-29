@@ -1,18 +1,3 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 import { useState, useRef } from "react";
 import { useFormik } from "formik";
 
@@ -21,38 +6,25 @@ import { Link, Navigate, Route, Routes } from "react-router-dom";
 
 // @mui material components
 import Card from "@mui/material/Card";
-import Switch from "@mui/material/Switch";
-import Grid from "@mui/material/Grid";
-import MuiLink from "@mui/material/Link";
-
-// @mui icons
-import FacebookIcon from "@mui/icons-material/Facebook";
-import GitHubIcon from "@mui/icons-material/GitHub";
-import GoogleIcon from "@mui/icons-material/Google";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
+import Dashboard from "../../dashboard";
+import MDSnackbar from "../../../components/MDSnackbar";
 
 // Authentication layout components
 import BasicLayout from "layouts/authentication/components/BasicLayout";
 
 // Images
 import bgImage from "assets/images/bg-sign-in-basic.jpeg";
-
 import brandWhite from "assets/images/logo-ct.png";
 
 import * as Yup from "yup";
 
 import PostLogin from "./function";
-
-import themeDark from "../../../assets/theme-dark";
-import theme from "../../../assets/theme";
-import CssBaseline from "@mui/material/CssBaseline";
-
-import Dashboard from "../../dashboard";
 
 function Basic() {
   let isLogin = false;
@@ -66,9 +38,13 @@ function Basic() {
     password: "",
   });
 
-  const [rememberMe, setRememberMe] = useState(false);
-
-  const handleSetRememberMe = () => setRememberMe(!rememberMe);
+  const [popupProps, setPopUpProps] = useState({
+    open: false,
+    icon: "warning",
+    color: "error",
+    title: "",
+    content: "",
+  });
 
   const textRef = useRef([]);
 
@@ -89,22 +65,31 @@ function Basic() {
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (login.id === null || login.id === "") {
-      // setPopUpProps({ ...popupProps, open: true, type: "알림", msg: "아이디를 입력하세요" });
-      // textRef.current[0].focus();
-    } else if (login.password === null || login.password === "") {
-      // setPopUpProps({ ...popupProps, open: true, type: "알림", msg: "비밀번호를 입력하세요." });
-      // textRef.current[1].focus();
+    if (!login.id) {
+      formik.setFieldTouched("id", true);
+      textRef.current[0]?.focus();
+    } else if (!login.password) {
+      formik.setFieldTouched("password", true);
+      textRef.current[1]?.focus();
     } else {
-      // sha 256 encode && postLogin
       PostLogin(login).catch((rej) => {
-        // setPopUpProps({ ...popupProps, open: true, type: "오류", msg: rej.response.data.message });
+        console.log(rej);
+        setPopUpProps({
+          ...popupProps,
+          open: true,
+          title: "로그인 실패",
+          content: rej.response.data.message,
+        });
       });
     }
   }
 
+  function closePopUp() {
+    setPopUpProps({ ...popupProps, open: false });
+  }
+
   return (
-    <div>
+    <>
       {isLogin ? (
         <Routes>
           <Route exact path="/dashboard" element=<Dashboard /> key="sign-in" />
@@ -150,6 +135,7 @@ function Basic() {
                     helperText={formik.touched.id && formik.errors.id}
                     value={formik.values.id}
                     onChange={(e) => {
+                      e.target.value = e.target.value.trim();
                       formik.handleChange(e);
                       setLogin({
                         ...login,
@@ -161,6 +147,15 @@ function Basic() {
                     name="id"
                     id="id"
                     fullWidth
+                    FormHelperTextProps={{
+                      style: {
+                        fontFamily: "Pretendard-Regular",
+                        fontSize: "1.4vmin",
+                        color: "red",
+                        marginLeft: 0,
+                      },
+                    }}
+                    inputRef={(el) => (textRef.current[0] = el)}
                   />
                 </MDBox>
                 <MDBox mb={2}>
@@ -170,6 +165,7 @@ function Basic() {
                     helperText={formik.touched.password && formik.errors.password}
                     value={formik.values.password}
                     onChange={(e) => {
+                      e.target.value = e.target.value.trim();
                       formik.handleChange(e);
                       setLogin({
                         ...login,
@@ -181,6 +177,15 @@ function Basic() {
                     name="password"
                     id="password"
                     fullWidth
+                    FormHelperTextProps={{
+                      style: {
+                        fontFamily: "Pretendard-Regular",
+                        fontSize: "1.4vmin",
+                        color: "red",
+                        marginLeft: 0,
+                      },
+                    }}
+                    inputRef={(el) => (textRef.current[1] = el)}
                   />
                 </MDBox>
                 <MDBox mt={4} mb={1}>
@@ -220,7 +225,19 @@ function Basic() {
           </Card>
         </BasicLayout>
       )}
-    </div>
+      {popupProps.open && (
+        <MDSnackbar
+          color={popupProps.color}
+          icon={popupProps.icon}
+          title={popupProps.title}
+          content={popupProps.content}
+          open={popupProps.open}
+          onClose={closePopUp}
+          close={closePopUp}
+          bgWhite
+        />
+      )}
+    </>
   );
 }
 
