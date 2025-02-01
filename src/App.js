@@ -53,6 +53,7 @@ import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "co
 import brandWhite from "assets/images/logo-ct.png";
 import brandDark from "assets/images/logo-ct-dark.png";
 import SignIn from "./layouts/authentication/sign-in";
+import SignUp from "./layouts/authentication/sign-up";
 
 import Interceptor from "layouts/common/Interceptor";
 
@@ -166,6 +167,7 @@ export default function App() {
           <CssBaseline />
           <Routes>
             <Route exact path="/authentication/sign-in" element=<SignIn /> key="sign-in" />
+            <Route exact path="/authentication/sign-up" element=<SignUp /> key="sign-up" />
             <Route path="*" element={<Navigate to="/authentication/sign-in" />} />
           </Routes>
         </ThemeProvider>
