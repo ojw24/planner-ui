@@ -19,12 +19,12 @@ import MDSnackbar from "../../../components/MDSnackbar";
 import BasicLayout from "layouts/authentication/components/BasicLayout";
 
 // Images
-import bgImage from "assets/images/bg-sign-in-basic.jpeg";
+import bgImage from "assets/images/bg-basic.jpeg";
 import brandWhite from "assets/images/logo-ct.png";
 
 import * as Yup from "yup";
 
-import PostLogin from "./function";
+import SignIn from "./function";
 
 function Basic() {
   let isLogin = false;
@@ -72,14 +72,15 @@ function Basic() {
       formik.setFieldTouched("password", true);
       textRef.current[1]?.focus();
     } else {
-      PostLogin(login).catch((rej) => {
-        console.log(rej);
-        setPopUpProps({
-          ...popupProps,
-          open: true,
-          title: "로그인 실패",
-          content: rej.response.data.message,
-        });
+      SignIn(login).catch((rej) => {
+        if (rej.response.data.message) {
+          setPopUpProps({
+            ...popupProps,
+            open: true,
+            title: "로그인 실패",
+            content: rej.response.data.message,
+          });
+        }
       });
     }
   }
@@ -128,7 +129,7 @@ function Basic() {
             </MDBox>
             <MDBox pt={4} pb={3} px={3}>
               <MDBox component="form" role="form" onSubmit={handleSubmit}>
-                <MDBox mb={2}>
+                <MDBox mb={2} height="3.2rem">
                   <MDInput
                     error={Boolean(formik.touched.id && formik.errors.id)}
                     onBlur={formik.handleBlur}
@@ -156,9 +157,10 @@ function Basic() {
                       },
                     }}
                     inputRef={(el) => (textRef.current[0] = el)}
+                    autoComplete="off"
                   />
                 </MDBox>
-                <MDBox mb={2}>
+                <MDBox mb={1} height="3.2rem">
                   <MDInput
                     error={Boolean(formik.touched.password && formik.errors.password)}
                     onBlur={formik.handleBlur}
@@ -186,6 +188,7 @@ function Basic() {
                       },
                     }}
                     inputRef={(el) => (textRef.current[1] = el)}
+                    autoComplete="off"
                   />
                 </MDBox>
                 <MDBox mt={4} mb={1}>
@@ -203,7 +206,13 @@ function Basic() {
                   </MDButton>
                 </MDBox>
                 <MDBox mt={3} mb={1} textAlign="center">
-                  <MDTypography variant="button" color="text">
+                  <MDTypography
+                    variant="button"
+                    color="text"
+                    sx={{
+                      fontFamily: "'Pretendard-Light', sans-serif",
+                    }}
+                  >
                     아직 계정이 없다면?&nbsp;{" "}
                     <MDTypography
                       component={Link}

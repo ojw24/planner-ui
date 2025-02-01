@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
 
-async function PostLogin(props) {
+async function SignIn(props) {
   return new Promise((resolve, reject) => {
     axios
       .post("/planner/api/auth/login", {
@@ -23,4 +23,4 @@ async function PostLogin(props) {
   });
 }
 
-export default PostLogin;
+export default SignIn;
