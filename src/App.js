@@ -1,18 +1,3 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 import { useState, useEffect, useMemo } from "react";
 
 // react-router components
@@ -54,6 +39,9 @@ import brandWhite from "assets/images/logo-ct.png";
 import brandDark from "assets/images/logo-ct-dark.png";
 import SignIn from "./layouts/authentication/sign-in";
 import SignUp from "./layouts/authentication/sign-up";
+import FindId from "./layouts/authentication/find-id";
+import FindPassword from "./layouts/authentication/find-password";
+import ResetPassword from "./layouts/authentication/reset-password";
 
 import Interceptor from "layouts/common/Interceptor";
 
@@ -168,6 +156,19 @@ export default function App() {
           <Routes>
             <Route exact path="/authentication/sign-in" element=<SignIn /> key="sign-in" />
             <Route exact path="/authentication/sign-up" element=<SignUp /> key="sign-up" />
+            <Route exact path="/authentication/find-id" element=<FindId /> key="find-id" />
+            <Route
+              exact
+              path="/authentication/find-password"
+              element=<FindPassword />
+              key="find-password"
+            />
+            <Route
+              exact
+              path="/authentication/reset-password"
+              element=<ResetPassword />
+              key="reset-password"
+            />
             <Route path="*" element={<Navigate to="/authentication/sign-in" />} />
           </Routes>
         </ThemeProvider>
