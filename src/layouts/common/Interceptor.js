@@ -89,9 +89,12 @@ const Interceptor = () => {
       } else if (error.response.status === 500) {
         setPopUpProps({
           ...popupProps,
+          icon: "warning",
+          color: "error",
           open: true,
           title: "오류",
           content: "서버 오류가 발생했습니다.\r\n관리자에게 문의해주세요.",
+          redirect: false,
         });
       }
 

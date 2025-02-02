@@ -1,8 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useFormik } from "formik";
-
-// react-router-dom components
-import { Link, Navigate, Route, Routes } from "react-router-dom";
 
 // @mui material components
 import Card from "@mui/material/Card";
@@ -26,7 +23,12 @@ import loading from "assets/images/loading.gif";
 import * as Yup from "yup";
 import * as func from "./function";
 
+import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+
 function Cover() {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+
   let isLogin = false;
 
   if (localStorage.getItem("jwt")) {
@@ -35,20 +37,27 @@ function Cover() {
 
   const [disabled, setDisabled] = useState(false);
 
-  const [dup, setDup] = useState(true);
-
-  const [checkId, setCheckId] = useState("");
-
-  const [signUp, setSignUp] = useState({
+  const [passwordReset, setPasswordReset] = useState({
     id: "",
     password: "",
     password2: "",
-    name: "",
-    email: "",
+    key: "",
   });
 
+  useEffect(() => {
+    const userId = queryParams.get("userId");
+    const key = queryParams.get("key");
+
+    if (userId && key) {
+      setPasswordReset((prevState) => ({
+        ...prevState,
+        id: userId,
+        key: key,
+      }));
+    }
+  }, [location.search]);
+
   const [popupProps, setPopUpProps] = useState({
-    redirect: false,
     open: false,
     icon: "warning",
     color: "error",
@@ -56,68 +65,24 @@ function Cover() {
     content: "",
   });
 
-  function closePopUp(redirect) {
+  function closePopUp() {
     setPopUpProps({ ...popupProps, open: false });
-    if (redirect) window.location.href = "/";
-  }
-
-  function dupCheck() {
-    if (signUp.id) {
-      if (signUp.id !== checkId) {
-        setCheckId(signUp.id);
-        func
-          .DupCheck(signUp.id)
-          .then((res) => {
-            setDup(false);
-            return true;
-          })
-          .catch((rej) => {
-            formik.setFieldError("id", "* 이미 사용 중인 아이디입니다");
-            setDup(true);
-            return false;
-          });
-      } else {
-        if (!dup) {
-          return true;
-        } else {
-          return false;
-        }
-      }
-    }
-
-    return true;
   }
 
   const textRef = useRef([]);
 
   const formik = useFormik({
     initialValues: {
-      id: "",
       password: "",
       password2: "",
-      name: "",
-      email: "",
     },
     validationSchema: Yup.object({
-      id: Yup.string()
-        .max(255)
-        .required("* 아이디를 입력하세요")
-        .test("dupCheck", "* 이미 사용 중인 아이디입니다", function (v) {
-          if (!v) return true;
-          return dupCheck();
-        }),
       password: Yup.string().max(255).required("* 비밀번호를 입력하세요"),
       password2: Yup.string()
         .max(255)
         .required("* 비밀번호 확인을 입력하세요")
         .oneOf([Yup.ref("password")], "* 비밀번호가 일치하지 않습니다"),
-      name: Yup.string().max(50).required("* 이름을 입력하세요"),
-      email: Yup.string()
-        .max(255)
-        .required("* 이메일을 입력하세요")
-        .email("* 올바른 이메일 형식이 아닙니다"),
     }),
-    validateOnChange: false,
     onSubmit: () => {
       handleSubmit();
     },
@@ -126,35 +91,25 @@ function Cover() {
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (!signUp.id || !dupCheck()) {
-      formik.setFieldTouched("id", true);
-      textRef.current[0]?.focus();
-    } else if (!signUp.password) {
+    if (!passwordReset.password) {
       formik.setFieldTouched("password", true);
-      textRef.current[1]?.focus();
-    } else if (!signUp.password2 || signUp.password !== signUp.password2) {
+      textRef.current[0]?.focus();
+    } else if (!passwordReset.password2 || passwordReset.password !== passwordReset.password2) {
       formik.setFieldTouched("password2", true);
-      textRef.current[2]?.focus();
-    } else if (!signUp.name) {
-      formik.setFieldTouched("name", true);
-      textRef.current[3]?.focus();
-    } else if (!signUp.email) {
-      formik.setFieldTouched("email", true);
-      textRef.current[4]?.focus();
+      textRef.current[1]?.focus();
     } else {
       setDisabled(true);
       func
-        .SignUp(signUp)
+        .ResetPassword(passwordReset)
         .then((res) => {
           setDisabled(false);
           setPopUpProps({
             ...popupProps,
-            redirect: true,
             open: true,
             color: "success",
             icon: "check",
-            title: "회원가입 성공",
-            content: "회원가입에 성공했습니다.",
+            title: "비밀번호 재설정",
+            content: "비밀번호 재설정에 성공했습니다.",
           });
         })
         .catch((rej) => {
@@ -162,11 +117,10 @@ function Cover() {
           if (rej.response.data.message) {
             setPopUpProps({
               ...popupProps,
-              redirect: false,
               open: true,
               icon: "warning",
               color: "error",
-              title: "회원가입 실패",
+              title: "비밀번호 재설정",
               content: rej.response.data.message,
             });
           }
@@ -197,14 +151,14 @@ function Cover() {
     autoComplete: "off",
   };
 
-  const inputCore = (formik, fieldName, setSignUp) => ({
+  const inputCore = (formik, fieldName, setPasswordReset) => ({
     error: Boolean(formik.touched[fieldName] && formik.errors[fieldName]),
     onBlur: formik.handleBlur,
     helperText: formik.touched[fieldName] && formik.errors[fieldName],
     value: formik.values[fieldName],
     onChange: (e) => {
       e.target.value = e.target.value.trim();
-      setSignUp((prev) => ({ ...prev, [fieldName]: e.target.value }));
+      setPasswordReset((prev) => ({ ...prev, [fieldName]: e.target.value }));
       formik.handleChange(e);
     },
   });
@@ -231,7 +185,7 @@ function Cover() {
               coloredShadow="success"
               mx={2}
               mt={-3}
-              p={3}
+              py={2}
               mb={1}
               textAlign="center"
             >
@@ -257,69 +211,33 @@ function Cover() {
                   fontFamily: "'Pretendard-Regular', sans-serif",
                 }}
               >
-                회원가입을 위해 아래 정보를 입력해주세요
+                아래 정보를 입력하여 비밀번호를 재설정해주세요
               </MDTypography>
             </MDBox>
             <MDBox pt={2} pb={3} px={3}>
               <MDBox component="form" role="form" onSubmit={handleSubmit}>
                 <MDBox {...boxStyles}>
                   <MDInput
-                    {...inputCore(formik, "id", setSignUp)}
-                    {...inputStyles}
-                    type="text"
-                    label="아이디"
-                    name="id"
-                    id="id"
-                    fullWidth
-                    inputRef={(el) => (textRef.current[0] = el)}
-                  />
-                </MDBox>
-                <MDBox {...boxStyles}>
-                  <MDInput
-                    {...inputCore(formik, "password", setSignUp)}
+                    {...inputCore(formik, "password", setPasswordReset)}
                     {...inputStyles}
                     type="password"
                     label="비밀번호"
                     name="password"
                     id="password"
                     fullWidth
-                    inputRef={(el) => (textRef.current[1] = el)}
+                    inputRef={(el) => (textRef.current[0] = el)}
                   />
                 </MDBox>
                 <MDBox {...boxStyles}>
                   <MDInput
-                    {...inputCore(formik, "password2", setSignUp)}
+                    {...inputCore(formik, "password2", setPasswordReset)}
                     {...inputStyles}
                     type="password"
                     label="비밀번호 확인"
                     name="password2"
                     id="password2"
                     fullWidth
-                    inputRef={(el) => (textRef.current[2] = el)}
-                  />
-                </MDBox>
-                <MDBox {...boxStyles}>
-                  <MDInput
-                    {...inputCore(formik, "name", setSignUp)}
-                    {...inputStyles}
-                    type="text"
-                    label="이름"
-                    name="name"
-                    id="name"
-                    fullWidth
-                    inputRef={(el) => (textRef.current[3] = el)}
-                  />
-                </MDBox>
-                <MDBox {...boxStyles}>
-                  <MDInput
-                    {...inputCore(formik, "email", setSignUp)}
-                    {...inputStyles}
-                    type="email"
-                    label="이메일"
-                    name="email"
-                    id="email"
-                    fullWidth
-                    inputRef={(el) => (textRef.current[4] = el)}
+                    inputRef={(el) => (textRef.current[1] = el)}
                   />
                 </MDBox>
                 <MDBox mt={4} mb={1}>
@@ -338,29 +256,34 @@ function Cover() {
                     {disabled ? (
                       <MDBox component="img" src={loading} alt="loading" width="1vw" />
                     ) : (
-                      "회원가입"
+                      "비밀번호 재설정"
                     )}
                   </MDButton>
                 </MDBox>
-                <MDBox mt={3} mb={1} textAlign="center">
+                <MDBox display="flex" justifyContent="space-between">
                   <MDTypography
+                    component={Link}
+                    to="/authentication/sign-in"
                     variant="button"
                     color="text"
+                    textGradient
                     sx={{
                       fontFamily: "'Pretendard-Light', sans-serif",
                     }}
                   >
-                    이미 계정이 있다면?&nbsp;{" "}
-                    <MDTypography
-                      component={Link}
-                      to="/authentication/sign-in"
-                      variant="button"
-                      color="info"
-                      fontWeight="medium"
-                      textGradient
-                    >
-                      로그인
-                    </MDTypography>
+                    &lt;&nbsp;로그인
+                  </MDTypography>
+                  <MDTypography
+                    component={Link}
+                    to="/authentication/sign-in"
+                    variant="button"
+                    color="text"
+                    textGradient
+                    sx={{
+                      fontFamily: "'Pretendard-Light', sans-serif",
+                    }}
+                  >
+                    &nbsp;
                   </MDTypography>
                 </MDBox>
               </MDBox>
@@ -375,8 +298,8 @@ function Cover() {
           title={popupProps.title}
           content={popupProps.content}
           open={popupProps.open}
-          onClose={() => closePopUp(popupProps.redirect)}
-          close={() => closePopUp(popupProps.redirect)}
+          onClose={closePopUp}
+          close={closePopUp}
           bgWhite
         />
       )}

@@ -44,6 +44,9 @@ import Notifications from "layouts/notifications";
 import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
+import FindId from "layouts/authentication/find-id";
+import FindPassword from "layouts/authentication/find-password";
+import ResetPassword from "layouts/authentication/reset-password";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
@@ -112,6 +115,30 @@ const routes = [
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/authentication/sign-up",
     component: <SignUp />,
+  },
+  {
+    type: "collapse",
+    name: "Find id",
+    key: "find-id",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/authentication/find-id",
+    component: <FindId />,
+  },
+  {
+    type: "collapse",
+    name: "Find password",
+    key: "find-password",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/authentication/find-password",
+    component: <FindPassword />,
+  },
+  {
+    type: "collapse",
+    name: "Reset password",
+    key: "reset-password",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/authentication/reset-password",
+    component: <ResetPassword />,
   },
 ];
 

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useFormik } from "formik";
 
 // react-router-dom components
@@ -21,6 +21,7 @@ import BasicLayout from "layouts/authentication/components/BasicLayout";
 // Images
 import bgImage from "assets/images/bg-basic.jpeg";
 import brandWhite from "assets/images/logo-ct.png";
+import loading from "assets/images/loading.gif";
 
 import * as Yup from "yup";
 
@@ -32,6 +33,8 @@ function Basic() {
   if (localStorage.getItem("jwt")) {
     isLogin = true;
   }
+
+  const [disabled, setDisabled] = useState(false);
 
   const [login, setLogin] = useState({
     id: "",
@@ -72,16 +75,22 @@ function Basic() {
       formik.setFieldTouched("password", true);
       textRef.current[1]?.focus();
     } else {
-      SignIn(login).catch((rej) => {
-        if (rej.response.data.message) {
-          setPopUpProps({
-            ...popupProps,
-            open: true,
-            title: "로그인 실패",
-            content: rej.response.data.message,
-          });
-        }
-      });
+      setDisabled(true);
+      SignIn(login)
+        .then((res) => {
+          setDisabled(false);
+        })
+        .catch((rej) => {
+          setDisabled(false);
+          if (rej.response.data.message) {
+            setPopUpProps({
+              ...popupProps,
+              open: true,
+              title: "로그인 실패",
+              content: rej.response.data.message,
+            });
+          }
+        });
     }
   }
 
@@ -200,9 +209,15 @@ function Basic() {
                     sx={{
                       fontFamily: "'Pretendard-Bold', sans-serif",
                       fontSize: "1vw",
+                      lineHeight: 1,
                     }}
+                    disabled={disabled}
                   >
-                    로그인
+                    {disabled ? (
+                      <MDBox component="img" src={loading} alt="loading" width="1vw" />
+                    ) : (
+                      "로그인"
+                    )}
                   </MDButton>
                 </MDBox>
                 <MDBox mt={3} mb={1} textAlign="center">
@@ -226,6 +241,18 @@ function Basic() {
                       }}
                     >
                       회원가입
+                    </MDTypography>
+                    <br />
+                    <MDTypography
+                      component={Link}
+                      to="/authentication/find-id"
+                      variant="button"
+                      color="dark"
+                      sx={{
+                        fontFamily: "'Pretendard-Regular', sans-serif",
+                      }}
+                    >
+                      가입 정보를 잊으셨나요?
                     </MDTypography>
                   </MDTypography>
                 </MDBox>

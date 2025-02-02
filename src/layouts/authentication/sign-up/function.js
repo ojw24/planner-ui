@@ -24,7 +24,7 @@ export async function SignUp(props) {
 export async function DupCheck(id) {
   return new Promise((resolve, reject) => {
     axios
-      .get("/planner/api/user/duplicate-check", {
+      .get("/planner/api/user/auth/duplicate-check", {
         params: {
           userId: id,
         },
