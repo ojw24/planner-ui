@@ -108,7 +108,7 @@ const navbarIconButton = ({ typography: { size }, breakpoints }) => ({
   px: 1,
 
   "& .material-icons, .material-icons-round": {
-    fontSize: `${size.xl} !important`,
+    // fontSize: `${size.xl} !important`,
   },
 
   "& .MuiTypography-root": {

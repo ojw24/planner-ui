@@ -207,13 +207,13 @@ function Cover() {
                     fullWidth
                     sx={{
                       fontFamily: "'Pretendard-Bold', sans-serif",
-                      fontSize: "1vw",
+                      fontSize: "0.9rem",
                       lineHeight: 1,
                     }}
                     disabled={disabled}
                   >
                     {disabled ? (
-                      <MDBox component="img" src={loading} alt="loading" width="1vw" />
+                      <MDBox component="img" src={loading} alt="loading" width="1rem" />
                     ) : (
                       "비밀번호 찾기"
                     )}

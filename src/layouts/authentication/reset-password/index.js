@@ -9,7 +9,6 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
-import Dashboard from "../../dashboard";
 import MDSnackbar from "components/MDSnackbar";
 
 // Authentication layout components
@@ -23,17 +22,11 @@ import loading from "assets/images/loading.gif";
 import * as Yup from "yup";
 import * as func from "./function";
 
-import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 function Cover() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-
-  let isLogin = false;
-
-  if (localStorage.getItem("jwt")) {
-    isLogin = true;
-  }
 
   const [disabled, setDisabled] = useState(false);
 
@@ -102,7 +95,6 @@ function Cover() {
       func
         .ResetPassword(passwordReset)
         .then((res) => {
-          setDisabled(false);
           setPopUpProps({
             ...popupProps,
             open: true,
@@ -113,8 +105,7 @@ function Cover() {
           });
         })
         .catch((rej) => {
-          setDisabled(false);
-          if (rej.response.data.message) {
+          if (rej.response.status !== 422 && rej.response.data.message) {
             setPopUpProps({
               ...popupProps,
               open: true,
@@ -124,6 +115,9 @@ function Cover() {
               content: rej.response.data.message,
             });
           }
+        })
+        .finally(() => {
+          setDisabled(false);
         });
     }
   }
@@ -170,127 +164,120 @@ function Cover() {
 
   return (
     <>
-      {isLogin ? (
-        <Routes>
-          <Route exact path="/dashboard" element=<Dashboard /> key="sign-in" />
-          <Route path="*" element={<Navigate to="/dashboard" />} />
-        </Routes>
-      ) : (
-        <BasicLayout image={bgImage}>
-          <Card>
-            <MDBox
-              variant="gradient"
-              bgColor="dark"
-              borderRadius="lg"
-              coloredShadow="success"
-              mx={2}
-              mt={-3}
-              py={2}
-              mb={1}
-              textAlign="center"
+      <BasicLayout image={bgImage}>
+        <Card>
+          <MDBox
+            variant="gradient"
+            bgColor="dark"
+            borderRadius="lg"
+            coloredShadow="success"
+            mx={2}
+            mt={-3}
+            py={2}
+            mb={1}
+            textAlign="center"
+          >
+            <MDTypography
+              variant="h4"
+              fontWeight="medium"
+              color="white"
+              mt={2}
+              mb={2}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
             >
-              <MDTypography
-                variant="h4"
-                fontWeight="medium"
-                color="white"
-                mt={2}
-                mb={2}
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <MDBox component="img" src={brandWhite} alt="Brand" width="1.75rem" mx={0.5} />
-                Planner
-              </MDTypography>
-              <MDTypography
-                display="block"
-                variant="button"
-                color="white"
-                my={1}
-                sx={{
-                  fontFamily: "'Pretendard-Regular', sans-serif",
-                }}
-              >
-                아래 정보를 입력하여 비밀번호를 재설정해주세요
-              </MDTypography>
-            </MDBox>
-            <MDBox pt={2} pb={3} px={3}>
-              <MDBox component="form" role="form" onSubmit={handleSubmit}>
-                <MDBox {...boxStyles}>
-                  <MDInput
-                    {...inputCore(formik, "password", setPasswordReset)}
-                    {...inputStyles}
-                    type="password"
-                    label="비밀번호"
-                    name="password"
-                    id="password"
-                    fullWidth
-                    inputRef={(el) => (textRef.current[0] = el)}
-                  />
-                </MDBox>
-                <MDBox {...boxStyles}>
-                  <MDInput
-                    {...inputCore(formik, "password2", setPasswordReset)}
-                    {...inputStyles}
-                    type="password"
-                    label="비밀번호 확인"
-                    name="password2"
-                    id="password2"
-                    fullWidth
-                    inputRef={(el) => (textRef.current[1] = el)}
-                  />
-                </MDBox>
-                <MDBox mt={4} mb={1}>
-                  <MDButton
-                    type="submit"
-                    variant="gradient"
-                    color="info"
-                    fullWidth
-                    sx={{
-                      fontFamily: "'Pretendard-Bold', sans-serif",
-                      fontSize: "1vw",
-                      lineHeight: 1,
-                    }}
-                    disabled={disabled}
-                  >
-                    {disabled ? (
-                      <MDBox component="img" src={loading} alt="loading" width="1vw" />
-                    ) : (
-                      "비밀번호 재설정"
-                    )}
-                  </MDButton>
-                </MDBox>
-                <MDBox display="flex" justifyContent="space-between">
-                  <MDTypography
-                    component={Link}
-                    to="/authentication/sign-in"
-                    variant="button"
-                    color="text"
-                    textGradient
-                    sx={{
-                      fontFamily: "'Pretendard-Light', sans-serif",
-                    }}
-                  >
-                    &lt;&nbsp;로그인
-                  </MDTypography>
-                  <MDTypography
-                    component={Link}
-                    to="/authentication/sign-in"
-                    variant="button"
-                    color="text"
-                    textGradient
-                    sx={{
-                      fontFamily: "'Pretendard-Light', sans-serif",
-                    }}
-                  >
-                    &nbsp;
-                  </MDTypography>
-                </MDBox>
+              <MDBox component="img" src={brandWhite} alt="Brand" width="1.75rem" mx={0.5} />
+              Planner
+            </MDTypography>
+            <MDTypography
+              display="block"
+              variant="button"
+              color="white"
+              my={1}
+              sx={{
+                fontFamily: "'Pretendard-Regular', sans-serif",
+              }}
+            >
+              아래 정보를 입력하여 비밀번호를 재설정해주세요
+            </MDTypography>
+          </MDBox>
+          <MDBox pt={2} pb={3} px={3}>
+            <MDBox component="form" role="form" onSubmit={handleSubmit}>
+              <MDBox {...boxStyles}>
+                <MDInput
+                  {...inputCore(formik, "password", setPasswordReset)}
+                  {...inputStyles}
+                  type="password"
+                  label="비밀번호"
+                  name="password"
+                  id="password"
+                  fullWidth
+                  inputRef={(el) => (textRef.current[0] = el)}
+                />
+              </MDBox>
+              <MDBox {...boxStyles}>
+                <MDInput
+                  {...inputCore(formik, "password2", setPasswordReset)}
+                  {...inputStyles}
+                  type="password"
+                  label="비밀번호 확인"
+                  name="password2"
+                  id="password2"
+                  fullWidth
+                  inputRef={(el) => (textRef.current[1] = el)}
+                />
+              </MDBox>
+              <MDBox mt={4} mb={1}>
+                <MDButton
+                  type="submit"
+                  variant="gradient"
+                  color="info"
+                  fullWidth
+                  sx={{
+                    fontFamily: "'Pretendard-Bold', sans-serif",
+                    fontSize: "1vw",
+                    lineHeight: 1,
+                  }}
+                  disabled={disabled}
+                >
+                  {disabled ? (
+                    <MDBox component="img" src={loading} alt="loading" width="1rem" />
+                  ) : (
+                    "비밀번호 재설정"
+                  )}
+                </MDButton>
+              </MDBox>
+              <MDBox display="flex" justifyContent="space-between">
+                <MDTypography
+                  component={Link}
+                  to="/authentication/sign-in"
+                  variant="button"
+                  color="text"
+                  textGradient
+                  sx={{
+                    fontFamily: "'Pretendard-Light', sans-serif",
+                  }}
+                >
+                  &lt;&nbsp;로그인
+                </MDTypography>
+                <MDTypography
+                  component={Link}
+                  to="/authentication/sign-in"
+                  variant="button"
+                  color="text"
+                  textGradient
+                  sx={{
+                    fontFamily: "'Pretendard-Light', sans-serif",
+                  }}
+                >
+                  &nbsp;
+                </MDTypography>
               </MDBox>
             </MDBox>
-          </Card>
-        </BasicLayout>
-      )}
+          </MDBox>
+        </Card>
+      </BasicLayout>
       {popupProps.open && (
         <MDSnackbar
           color={popupProps.color}

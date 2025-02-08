@@ -20,9 +20,6 @@ import Grid from "@mui/material/Grid";
 import MDBox from "components/MDBox";
 
 // Material Dashboard 2 React example components
-import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
-import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
 import ReportsBarChart from "examples/Charts/BarCharts/ReportsBarChart";
 import ReportsLineChart from "examples/Charts/LineCharts/ReportsLineChart";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
@@ -39,8 +36,7 @@ function Dashboard() {
   const { sales, tasks } = reportsLineChartData;
 
   return (
-    <DashboardLayout>
-      <DashboardNavbar />
+    <>
       <MDBox py={3}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6} lg={3}>
@@ -155,8 +151,7 @@ function Dashboard() {
           </Grid>
         </MDBox>
       </MDBox>
-      <Footer />
-    </DashboardLayout>
+    </>
   );
 }
 

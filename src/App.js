@@ -14,6 +14,8 @@ import MDBox from "components/MDBox";
 // Material Dashboard 2 React example components
 import Sidenav from "examples/Sidenav";
 import Configurator from "examples/Configurator";
+import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 
 // Material Dashboard 2 React themes
 import theme from "assets/theme";
@@ -37,6 +39,7 @@ import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "co
 // Images
 import brandWhite from "assets/images/logo-ct.png";
 import brandDark from "assets/images/logo-ct-dark.png";
+
 import SignIn from "./layouts/authentication/sign-in";
 import SignUp from "./layouts/authentication/sign-up";
 import FindId from "./layouts/authentication/find-id";
@@ -66,6 +69,18 @@ export default function App() {
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const [rtlCache, setRtlCache] = useState(null);
   const { pathname } = useLocation();
+
+  let isResetPwd = false;
+
+  if (useLocation().pathname === "/authentication/reset-password") {
+    isResetPwd = true;
+  }
+
+  useEffect(() => {
+    if (pathname === "/authentication/reset-password") {
+      isResetPwd = true;
+    }
+  }, [pathname]);
 
   // Cache for the rtl
   useMemo(() => {
@@ -120,6 +135,11 @@ export default function App() {
       return null;
     });
 
+  const getNavRoutes = (allRoutes) =>
+    allRoutes
+      .filter((route) => route.route.indexOf("/authentication"))
+      .filter((route) => route.route.indexOf("/profile"));
+
   const configsButton = (
     <MDBox
       display="flex"
@@ -143,6 +163,19 @@ export default function App() {
       </Icon>
     </MDBox>
   );
+
+  const [isHalf, setIsHalf] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsHalf(window.innerWidth <= window.screen.availWidth / 2);
+    };
+
+    handleResize(); // 마운트 시 실행
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <div>
@@ -172,51 +205,44 @@ export default function App() {
             <Route path="*" element={<Navigate to="/authentication/sign-in" />} />
           </Routes>
         </ThemeProvider>
-      ) : direction === "rtl" ? (
-        <CacheProvider value={rtlCache}>
-          <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>
-            <CssBaseline />
-            {layout === "dashboard" && (
-              <>
-                <Sidenav
-                  color={sidenavColor}
-                  brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-                  brandName="Planner"
-                  routes={routes}
-                  onMouseEnter={handleOnMouseEnter}
-                  onMouseLeave={handleOnMouseLeave}
-                />
-                <Configurator />
-              </>
-            )}
-            {layout === "vr" && <Configurator />}
-            <Routes>
-              {getRoutes(routes)}
-              <Route path="*" element={<Navigate to="/dashboard" />} />
-            </Routes>
-          </ThemeProvider>
-        </CacheProvider>
       ) : (
         <ThemeProvider theme={darkMode ? themeDark : theme}>
-          <CssBaseline />
-          {layout === "dashboard" && (
+          {!isResetPwd ? (
+            <DashboardLayout>
+              <DashboardNavbar />
+              <CssBaseline />
+              <MDBox pt={isHalf ? 0 : 8}>
+                {layout === "dashboard" && (
+                  <>
+                    <Sidenav
+                      color={sidenavColor}
+                      brand={
+                        (transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite
+                      }
+                      brandName="Planner"
+                      routes={getNavRoutes(routes)}
+                      onMouseEnter={handleOnMouseEnter}
+                      onMouseLeave={handleOnMouseLeave}
+                    />
+                    <Configurator />
+                  </>
+                )}
+                {layout === "vr" && <Configurator />}
+                <Routes>
+                  {getRoutes(routes)}
+                  <Route path="*" element={<Navigate to="/dashboard" />} />
+                </Routes>
+              </MDBox>
+            </DashboardLayout>
+          ) : (
             <>
-              <Sidenav
-                color={sidenavColor}
-                brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-                brandName="Planner"
-                routes={routes}
-                onMouseEnter={handleOnMouseEnter}
-                onMouseLeave={handleOnMouseLeave}
-              />
-              <Configurator />
+              <CssBaseline />
+              <Routes>
+                <Route path="/authentication/reset-password" element={<ResetPassword />} />
+                <Route path="*" element={<Navigate to="/authentication/reset-password" />} />
+              </Routes>
             </>
           )}
-          {layout === "vr" && <Configurator />}
-          <Routes>
-            {getRoutes(routes)}
-            <Route path="*" element={<Navigate to="/dashboard" />} />
-          </Routes>
         </ThemeProvider>
       )}
     </div>
