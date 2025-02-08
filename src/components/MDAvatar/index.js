@@ -27,7 +27,7 @@ const MDAvatar = forwardRef(({ bgColor, size, shadow, ...rest }, ref) => (
 
 // Setting default values for the props of MDAvatar
 MDAvatar.defaultProps = {
-  bgColor: "transparent",
+  bgColor: "dark",
   size: "md",
   shadow: "none",
 };

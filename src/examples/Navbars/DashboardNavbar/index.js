@@ -1,22 +1,8 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 import { useState, useEffect } from "react";
 
 // react-router components
 import { useLocation, Link } from "react-router-dom";
+import routes from "routes";
 
 // prop-types is a library for typechecking of props.
 import PropTypes from "prop-types";
@@ -27,10 +13,12 @@ import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import Icon from "@mui/material/Icon";
+import ClickAwayListener from "@mui/base/ClickAwayListener";
+
+import MDTypography from "components/MDTypography";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
-import MDInput from "components/MDInput";
 
 // Material Dashboard 2 React example components
 import Breadcrumbs from "examples/Breadcrumbs";
@@ -42,32 +30,36 @@ import {
   navbarContainer,
   navbarRow,
   navbarIconButton,
-  navbarMobileMenu,
 } from "examples/Navbars/DashboardNavbar/styles";
 
 // Material Dashboard 2 React context
-import {
-  useMaterialUIController,
-  setTransparentNavbar,
-  setMiniSidenav,
-  setOpenConfigurator,
-} from "context";
+import { useMaterialUIController, setTransparentNavbar } from "context";
+import MenuItem from "@mui/material/MenuItem";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import Settings from "@mui/icons-material/Settings";
+import Logout from "@mui/icons-material/Logout";
+import * as React from "react";
+
+import LogOut from "./functions";
+
+import { FindMe } from "../../../layouts/profile/function";
+import MDAvatar from "../../../components/MDAvatar";
 
 function DashboardNavbar({ absolute, light, isMini }) {
-  const [navbarType, setNavbarType] = useState();
   const [controller, dispatch] = useMaterialUIController();
-  const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator, darkMode } = controller;
+  const { transparentNavbar, fixedNavbar, darkMode } = controller;
   const [openMenu, setOpenMenu] = useState(false);
   const route = useLocation().pathname.split("/").slice(1);
+  const [profile, setProfile] = useState("");
 
   useEffect(() => {
-    // Setting the navbar type
-    if (fixedNavbar) {
-      setNavbarType("sticky");
-    } else {
-      setNavbarType("static");
-    }
+    FindMe().then((res) => {
+      setProfile(res.data.file ? res.data.file.path : "");
+    });
+  }, []);
 
+  useEffect(() => {
     // A function that sets the transparent state of the navbar.
     function handleTransparentNavbar() {
       setTransparentNavbar(dispatch, (fixedNavbar && window.scrollY === 0) || !fixedNavbar);
@@ -86,8 +78,6 @@ function DashboardNavbar({ absolute, light, isMini }) {
     return () => window.removeEventListener("scroll", handleTransparentNavbar);
   }, [dispatch, fixedNavbar]);
 
-  const handleMiniSidenav = () => setMiniSidenav(dispatch, !miniSidenav);
-  const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
   const handleOpenMenu = (event) => setOpenMenu(event.currentTarget);
   const handleCloseMenu = () => setOpenMenu(false);
 
@@ -110,6 +100,104 @@ function DashboardNavbar({ absolute, light, isMini }) {
     </Menu>
   );
 
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    if (anchorEl) {
+      setAnchorEl(null);
+    } else {
+      setAnchorEl(event.currentTarget);
+    }
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleClickAway = (e) => {
+    if (anchorEl && !anchorEl.contains(e.target)) {
+      handleClose();
+    }
+  };
+
+  const getName = (allRoutes, key) => {
+    return key === "" ? "Dashboard" : allRoutes.find((route) => route.key === key).name;
+  };
+
+  const renderAccountMenu = () => (
+    <ClickAwayListener onClickAway={handleClickAway}>
+      <Menu
+        anchorEl={anchorEl}
+        id="account-menu"
+        open={open}
+        onClose={handleClose}
+        disableScrollLock
+        position="fixed"
+        sx={{
+          width: "0",
+        }}
+        PaperProps={{
+          style: {
+            transform: open ? "translateY(0)" : "translateY(-20px)",
+            width: "auto", // Menu width
+            maxWidth: "300px", // Set maximum width
+            maxHeight: "300px", // Set maximum height
+          },
+        }}
+        slotProps={{
+          backdrop: {
+            sx: {
+              width: "0",
+            },
+          },
+        }}
+      >
+        <MenuItem onClick={handleClose}>
+          <ListItemIcon>
+            <AccountCircleIcon fontSize="small" />
+          </ListItemIcon>
+          <MDTypography
+            component={Link}
+            to="/profile"
+            variant="button"
+            sx={{
+              fontFamily: "Pretendard-light",
+              fontSize: "2vmin",
+            }}
+          >
+            마이 페이지
+          </MDTypography>
+        </MenuItem>
+        <MenuItem onClick={handleClose}>
+          <ListItemIcon>
+            <Settings fontSize="small" />
+          </ListItemIcon>
+          <MDTypography
+            sx={{
+              fontFamily: "Pretendard-light",
+              fontSize: "2vmin",
+            }}
+          >
+            설정
+          </MDTypography>
+        </MenuItem>
+        <MenuItem onClick={LogOut}>
+          <ListItemIcon>
+            <Logout fontSize="small" />
+          </ListItemIcon>
+          <MDTypography
+            sx={{
+              fontFamily: "Pretendard-light",
+              fontSize: "2vmin",
+            }}
+          >
+            로그아웃
+          </MDTypography>
+        </MenuItem>
+      </Menu>
+    </ClickAwayListener>
+  );
+
   // Styles for the navbar icons
   const iconsStyle = ({ palette: { dark, white, text }, functions: { rgba } }) => ({
     color: () => {
@@ -123,63 +211,85 @@ function DashboardNavbar({ absolute, light, isMini }) {
     },
   });
 
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [isHalf, setIsHalf] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMaximized(window.innerWidth === window.screen.availWidth);
+      setIsHalf(window.innerWidth <= window.screen.availWidth / 2);
+    };
+
+    handleResize(); // 마운트 시 실행
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <AppBar
-      position={absolute ? "absolute" : navbarType}
+      position="fixed"
       color="inherit"
-      sx={(theme) => navbar(theme, { transparentNavbar, absolute, light, darkMode })}
+      sx={(theme) => ({
+        ...navbar(theme, { transparentNavbar, absolute, light, darkMode }),
+        width: isMaximized ? "77rem" : isHalf ? "0" : "inherit",
+        mx: "1rem",
+        mt: "0.25rem",
+      })}
     >
       <Toolbar sx={(theme) => navbarContainer(theme)}>
         <MDBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini })}>
-          <Breadcrumbs icon="home" title={route[route.length - 1]} route={route} light={light} />
+          <Breadcrumbs
+            icon="home"
+            title={getName(routes, route[route.length - 1])}
+            route={route}
+            light={light}
+            sx={iconsStyle}
+          />
         </MDBox>
-        {isMini ? null : (
-          <MDBox sx={(theme) => navbarRow(theme, { isMini })}>
-            <MDBox pr={1}>
-              <MDInput label="Search here" />
-            </MDBox>
-            <MDBox color={light ? "white" : "inherit"}>
-              <Link to="/authentication/sign-in/basic">
-                <IconButton sx={navbarIconButton} size="small" disableRipple>
-                  <Icon sx={iconsStyle}>account_circle</Icon>
-                </IconButton>
-              </Link>
-              <IconButton
-                size="small"
-                disableRipple
-                color="inherit"
-                sx={navbarMobileMenu}
-                onClick={handleMiniSidenav}
-              >
-                <Icon sx={iconsStyle} fontSize="medium">
-                  {miniSidenav ? "menu_open" : "menu"}
-                </Icon>
-              </IconButton>
-              <IconButton
-                size="small"
-                disableRipple
-                color="inherit"
-                sx={navbarIconButton}
-                onClick={handleConfiguratorOpen}
-              >
-                <Icon sx={iconsStyle}>settings</Icon>
-              </IconButton>
-              <IconButton
-                size="small"
-                disableRipple
-                color="inherit"
-                sx={navbarIconButton}
-                aria-controls="notification-menu"
-                aria-haspopup="true"
-                variant="contained"
-                onClick={handleOpenMenu}
-              >
-                <Icon sx={iconsStyle}>notifications</Icon>
-              </IconButton>
-              {renderMenu()}
-            </MDBox>
+        <MDBox sx={(theme) => navbarRow(theme, { isMini })}>
+          <MDBox color={light ? "white" : "inherit"}>
+            <IconButton
+              size="large"
+              disableRipple
+              color="inherit"
+              sx={navbarIconButton}
+              aria-controls="notification-menu"
+              aria-haspopup="true"
+              variant="contained"
+              onClick={handleOpenMenu}
+            >
+              <Icon sx={iconsStyle}>notifications</Icon>
+            </IconButton>
+            <IconButton
+              size="large"
+              disableRipple
+              color="inherit"
+              sx={navbarIconButton}
+              aria-controls="notification-menu"
+              aria-haspopup="true"
+              variant="contained"
+              onClick={handleClick}
+            >
+              {profile ? (
+                <MDAvatar
+                  id="profile"
+                  src={"/image" + profile}
+                  alt="profile-image"
+                  sx={{
+                    width: "1.75rem",
+                    height: "1.75rem",
+                  }}
+                  shadow="sm"
+                />
+              ) : (
+                <Icon sx={iconsStyle}>account_circle</Icon>
+              )}
+            </IconButton>
+            {renderMenu()}
+            {renderAccountMenu()}
           </MDBox>
-        )}
+        </MDBox>
       </Toolbar>
     </AppBar>
   );

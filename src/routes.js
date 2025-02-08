@@ -78,14 +78,6 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "RTL",
-    key: "rtl",
-    icon: <Icon fontSize="small">format_textdirection_r_to_l</Icon>,
-    route: "/rtl",
-    component: <RTL />,
-  },
-  {
-    type: "collapse",
     name: "Notifications",
     key: "notifications",
     icon: <Icon fontSize="small">notifications</Icon>,
@@ -94,7 +86,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "Profile",
+    name: "마이 페이지",
     key: "profile",
     icon: <Icon fontSize="small">person</Icon>,
     route: "/profile",

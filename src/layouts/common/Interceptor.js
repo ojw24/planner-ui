@@ -33,7 +33,9 @@ const Interceptor = () => {
       let jwt = localStorage.getItem("jwt") ? localStorage.getItem("jwt") : "";
       config.baseURL = "";
       config.headers["Authorization"] = `${jwt}`;
-      config.headers["Content-Type"] = "application/json";
+      config.headers["Content-Type"] = config.headers["Content-Type"]
+        ? config.headers["Content-Type"]
+        : "application/json";
 
       return config;
     },
@@ -58,7 +60,7 @@ const Interceptor = () => {
         error.response.data.message === "Access token is expired. Please refresh."
       ) {
         originalRequest._retry = true;
-        axios
+        return axios
           .post(
             "/planner/api/auth/refresh",
             {},
@@ -75,16 +77,23 @@ const Interceptor = () => {
             return axios(originalRequest);
           })
           .catch((err) => {
-            window.localStorage.removeItem("jwt");
-            setPopUpProps({
-              ...popupProps,
-              open: true,
-              title: "세션 만료",
-              icon: "warning",
-              color: "warning",
-              content: "세션이 만료되었습니다. 다시 로그인 해주세요.",
-              redirect: true,
-            });
+            if (
+              err.response.status === 403 &&
+              err.response.data.message === "세션이 만료되었습니다. 다시 로그인 해주세요."
+            ) {
+              window.localStorage.removeItem("jwt");
+              setPopUpProps({
+                ...popupProps,
+                open: true,
+                title: "세션 만료",
+                icon: "warning",
+                color: "warning",
+                content: "세션이 만료되었습니다. 다시 로그인 해주세요.",
+                redirect: true,
+              });
+            } else {
+              return Promise.reject(error);
+            }
           });
       } else if (error.response.status === 500) {
         setPopUpProps({
@@ -94,6 +103,29 @@ const Interceptor = () => {
           open: true,
           title: "오류",
           content: "서버 오류가 발생했습니다.\r\n관리자에게 문의해주세요.",
+          redirect: false,
+        });
+      } else if (
+        error.response.status === 401 &&
+        error.response.data.message !== "아이디 혹은 비밀번호가 올바르지 않습니다."
+      ) {
+        setPopUpProps({
+          ...popupProps,
+          icon: "warning",
+          color: "error",
+          open: true,
+          title: "오류",
+          content: "잘못된 요청입니다.",
+          redirect: false,
+        });
+      } else if (error.response.status === 422) {
+        setPopUpProps({
+          ...popupProps,
+          icon: "warning",
+          color: "error",
+          open: true,
+          title: "오류",
+          content: "입력값이 잘못되었습니다.",
           redirect: false,
         });
       }
