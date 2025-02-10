@@ -33,7 +33,12 @@ import {
 } from "examples/Navbars/DashboardNavbar/styles";
 
 // Material Dashboard 2 React context
-import { useMaterialUIController, setTransparentNavbar } from "context";
+import {
+  useMaterialUIController,
+  setTransparentNavbar,
+  setOpenConfigurator,
+  setIgnore,
+} from "context";
 import MenuItem from "@mui/material/MenuItem";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ListItemIcon from "@mui/material/ListItemIcon";
@@ -46,18 +51,16 @@ import LogOut from "./functions";
 import { FindMe } from "../../../layouts/profile/function";
 import MDAvatar from "../../../components/MDAvatar";
 
-function DashboardNavbar({ absolute, light, isMini }) {
+function DashboardNavbar({ absolute, light, isMini, image }) {
   const [controller, dispatch] = useMaterialUIController();
-  const { transparentNavbar, fixedNavbar, darkMode } = controller;
+  const { transparentNavbar, fixedNavbar, openConfigurator, darkMode, ignore } = controller;
   const [openMenu, setOpenMenu] = useState(false);
   const route = useLocation().pathname.split("/").slice(1);
-  const [profile, setProfile] = useState("");
+  const [profile, setProfile] = useState(image);
 
   useEffect(() => {
-    FindMe().then((res) => {
-      setProfile(res.data.file ? res.data.file.path : "");
-    });
-  }, []);
+    setProfile(image);
+  }, [image]);
 
   useEffect(() => {
     // A function that sets the transparent state of the navbar.
@@ -65,7 +68,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
       setTransparentNavbar(dispatch, (fixedNavbar && window.scrollY === 0) || !fixedNavbar);
     }
 
-    /** 
+    /**
      The event listener that's calling the handleTransparentNavbar function when 
      scrolling the window.
     */
@@ -79,6 +82,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
   }, [dispatch, fixedNavbar]);
 
   const handleOpenMenu = (event) => setOpenMenu(event.currentTarget);
+  const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
   const handleCloseMenu = () => setOpenMenu(false);
 
   // Render the notifications menu
@@ -119,6 +123,8 @@ function DashboardNavbar({ absolute, light, isMini }) {
       handleClose();
     }
   };
+
+  const handleIgnore = () => setIgnore(dispatch, !ignore);
 
   const getName = (allRoutes, key) => {
     return key === "" ? "Dashboard" : allRoutes.find((route) => route.key === key).name;
@@ -168,7 +174,13 @@ function DashboardNavbar({ absolute, light, isMini }) {
             마이 페이지
           </MDTypography>
         </MenuItem>
-        <MenuItem onClick={handleClose}>
+        <MenuItem
+          onClick={() => {
+            handleClose();
+            handleIgnore();
+            handleConfiguratorOpen();
+          }}
+        >
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
@@ -300,6 +312,7 @@ DashboardNavbar.defaultProps = {
   absolute: false,
   light: false,
   isMini: false,
+  image: "",
 };
 
 // Typechecking props for the DashboardNavbar
@@ -307,6 +320,7 @@ DashboardNavbar.propTypes = {
   absolute: PropTypes.bool,
   light: PropTypes.bool,
   isMini: PropTypes.bool,
+  image: PropTypes.string,
 };
 
 export default DashboardNavbar;

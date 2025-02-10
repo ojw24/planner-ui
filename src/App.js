@@ -48,12 +48,51 @@ import ResetPassword from "./layouts/authentication/reset-password";
 
 import Interceptor from "layouts/common/Interceptor";
 
+import { FindMe } from "./layouts/profile/function";
+
 export default function App() {
+  const [user, setUser] = useState({
+    userId: "",
+    name: "",
+    email: "",
+    setting: {
+      isFriendReqNoti: false,
+      isSchShareReqNoti: false,
+      isCommentNoti: false,
+    },
+    file: {
+      attcFileId: null,
+      path: "",
+    },
+  });
+
   let isLogin = false;
 
   if (localStorage.getItem("jwt")) {
     isLogin = true;
   }
+
+  useEffect(() => {
+    if (isLogin) {
+      FindMe().then((res) => {
+        setUser((p) => ({
+          ...p,
+          userId: res.data.userId,
+          name: res.data.userId,
+          email: res.data.userId,
+          setting: {
+            isFriendReqNoti: res.data.setting.isFriendReqNoti,
+            isSchShareReqNoti: res.data.setting.isSchShareReqNoti,
+            isCommentNoti: res.data.setting.isCommentNoti,
+          },
+          file: {
+            attcFileId: res.data.file ? res.data.file.attcFileId : null,
+            path: res.data.file ? res.data.file.path : "",
+          },
+        }));
+      });
+    }
+  }, []);
 
   const [controller, dispatch] = useMaterialUIController();
   const {
@@ -209,7 +248,7 @@ export default function App() {
         <ThemeProvider theme={darkMode ? themeDark : theme}>
           {!isResetPwd ? (
             <DashboardLayout>
-              <DashboardNavbar />
+              <DashboardNavbar image={user.file.path} />
               <CssBaseline />
               <MDBox pt={isHalf ? 0 : 8}>
                 {layout === "dashboard" && (
@@ -224,10 +263,20 @@ export default function App() {
                       onMouseEnter={handleOnMouseEnter}
                       onMouseLeave={handleOnMouseLeave}
                     />
-                    <Configurator />
+                    <Configurator
+                      userId={user.userId}
+                      settings={user.setting}
+                      attcFileId={user.file.attcFileId}
+                    />
                   </>
                 )}
-                {layout === "vr" && <Configurator />}
+                {layout === "vr" && (
+                  <Configurator
+                    userId={user.userId}
+                    settings={user.setting}
+                    attcFileId={user.file.attcFileId}
+                  />
+                )}
                 <Routes>
                   {getRoutes(routes)}
                   <Route path="*" element={<Navigate to="/dashboard" />} />
