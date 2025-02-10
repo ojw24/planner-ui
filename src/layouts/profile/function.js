@@ -15,13 +15,13 @@ export async function FindMe() {
 }
 
 export async function UpdateUser(props) {
-  console.log("attttc : " + props.fileId);
   return new Promise((resolve, reject) => {
     axios
       .put("/planner/api/user/" + props.userId, {
         name: props.name,
         email: props.email,
-        attcFileId: props.fileId,
+        settingUpdateDto: props.setting,
+        attcFileId: props.attcFileId,
       })
       .then((response) => {
         resolve(response.data);

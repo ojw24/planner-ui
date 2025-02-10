@@ -27,7 +27,7 @@ function Overview() {
     userId: "",
     name: "",
     email: "",
-    fileId: "",
+    attcFileId: "",
     file: "",
   });
 
@@ -45,7 +45,7 @@ function Overview() {
         userId: res.data.userId,
         name: res.data.name,
         email: res.data.email,
-        fileId: res.data.file ? res.data.file.attcFileId : null,
+        attcFileId: res.data.file ? res.data.file.attcFileId : null,
         file: res.data.file ? res.data.file.path : "",
       });
     });
@@ -174,16 +174,6 @@ function Overview() {
       })
       .catch((rej) => {
         setDisabled(false);
-        if (rej.response.data.message) {
-          setPopUpProps({
-            ...popupProps,
-            open: true,
-            icon: "warning",
-            color: "error",
-            title: "비밀번호 변경",
-            content: rej.response.data.message,
-          });
-        }
       });
   }
 
@@ -216,7 +206,7 @@ function Overview() {
         setUser({
           ...user,
           file: "uploaded file",
-          fileId: res.data,
+          attcFileId: res.data,
         });
       })
       .catch((rej) => {
