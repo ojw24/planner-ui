@@ -1,18 +1,3 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 import { useMemo, useEffect, useState } from "react";
 
 // prop-types is a library for typechecking of props
@@ -56,7 +41,7 @@ function DataTable({
   const data = useMemo(() => table.rows, [table]);
 
   const tableInstance = useTable(
-    { columns, data, initialState: { pageIndex: 0 } },
+    { columns, data, initialState: { pageIndex: 0 }, manualPagination: true },
     useGlobalFilter,
     useSortBy,
     usePagination
@@ -210,7 +195,8 @@ function DataTable({
                   <DataTableBodyCell
                     key={idx}
                     noBorder={noEndBorder && rows.length - 1 === key}
-                    align={cell.column.align ? cell.column.align : "left"}
+                    align={cell.column.cellAlign ? cell.column.cellAlign : "center"}
+                    isTop={row.original.isTop}
                     {...cell.getCellProps()}
                   >
                     {cell.render("Cell")}
@@ -221,50 +207,6 @@ function DataTable({
           })}
         </TableBody>
       </Table>
-
-      <MDBox
-        display="flex"
-        flexDirection={{ xs: "column", sm: "row" }}
-        justifyContent="space-between"
-        alignItems={{ xs: "flex-start", sm: "center" }}
-        p={!showTotalEntries && pageOptions.length === 1 ? 0 : 3}
-      >
-        {showTotalEntries && (
-          <MDBox mb={{ xs: 3, sm: 0 }}>
-            <MDTypography variant="button" color="secondary" fontWeight="regular">
-              Showing {entriesStart} to {entriesEnd} of {rows.length} entries
-            </MDTypography>
-          </MDBox>
-        )}
-        {pageOptions.length > 1 && (
-          <MDPagination
-            variant={pagination.variant ? pagination.variant : "gradient"}
-            color={pagination.color ? pagination.color : "info"}
-          >
-            {canPreviousPage && (
-              <MDPagination item onClick={() => previousPage()}>
-                <Icon sx={{ fontWeight: "bold" }}>chevron_left</Icon>
-              </MDPagination>
-            )}
-            {renderPagination.length > 6 ? (
-              <MDBox width="5rem" mx={1}>
-                <MDInput
-                  inputProps={{ type: "number", min: 1, max: customizedPageOptions.length }}
-                  value={customizedPageOptions[pageIndex]}
-                  onChange={(handleInputPagination, handleInputPaginationValue)}
-                />
-              </MDBox>
-            ) : (
-              renderPagination
-            )}
-            {canNextPage && (
-              <MDPagination item onClick={() => nextPage()}>
-                <Icon sx={{ fontWeight: "bold" }}>chevron_right</Icon>
-              </MDPagination>
-            )}
-          </MDPagination>
-        )}
-      </MDBox>
     </TableContainer>
   );
 }

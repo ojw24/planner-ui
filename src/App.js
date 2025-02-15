@@ -19,15 +19,9 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 
 // Material Dashboard 2 React themes
 import theme from "assets/theme";
-import themeRTL from "assets/theme/theme-rtl";
-
-// Material Dashboard 2 React Dark Mode themes
-import themeDark from "assets/theme-dark";
-import themeDarkRTL from "assets/theme-dark/theme-rtl";
 
 // RTL plugins
 import rtlPlugin from "stylis-plugin-rtl";
-import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
 
 // Material Dashboard 2 React routes
@@ -38,7 +32,6 @@ import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "co
 
 // Images
 import brandWhite from "assets/images/logo-ct.png";
-import brandDark from "assets/images/logo-ct-dark.png";
 
 import SignIn from "./layouts/authentication/sign-in";
 import SignUp from "./layouts/authentication/sign-up";
@@ -48,13 +41,14 @@ import ResetPassword from "./layouts/authentication/reset-password";
 
 import Interceptor from "layouts/common/Interceptor";
 
-import { FindMe } from "./layouts/profile/function";
+import { findMe } from "./layouts/profile/function";
 
 export default function App() {
   const [user, setUser] = useState({
     userId: "",
     name: "",
     email: "",
+    isAdmin: false,
     setting: {
       isFriendReqNoti: false,
       isSchShareReqNoti: false,
@@ -74,12 +68,13 @@ export default function App() {
 
   useEffect(() => {
     if (isLogin) {
-      FindMe().then((res) => {
+      findMe().then((res) => {
         setUser((p) => ({
           ...p,
           userId: res.data.userId,
           name: res.data.userId,
           email: res.data.userId,
+          isAdmin: res.data.isAdmin,
           setting: {
             isFriendReqNoti: res.data.setting.isFriendReqNoti,
             isSchShareReqNoti: res.data.setting.isSchShareReqNoti,
@@ -168,7 +163,16 @@ export default function App() {
       }
 
       if (route.route) {
-        return <Route exact path={route.route} element={route.component} key={route.key} />;
+        return (
+          <Route
+            exact
+            path={route.route}
+            element={
+              <route.component isAdmin={route.key === "notifications" ? user.isAdmin : undefined} />
+            }
+            key={route.key}
+          />
+        );
       }
 
       return null;
@@ -218,12 +222,12 @@ export default function App() {
 
   return (
     <div>
-      <ThemeProvider theme={darkMode ? themeDark : theme}>
+      <ThemeProvider theme={theme}>
         <CssBaseline />
         <Interceptor />
       </ThemeProvider>
       {!isLogin ? (
-        <ThemeProvider theme={darkMode ? themeDark : theme}>
+        <ThemeProvider theme={theme}>
           <CssBaseline />
           <Routes>
             <Route exact path="/authentication/sign-in" element=<SignIn /> key="sign-in" />
@@ -245,7 +249,7 @@ export default function App() {
           </Routes>
         </ThemeProvider>
       ) : (
-        <ThemeProvider theme={darkMode ? themeDark : theme}>
+        <ThemeProvider theme={theme}>
           {!isResetPwd ? (
             <DashboardLayout>
               <DashboardNavbar image={user.file.path} />
@@ -255,9 +259,7 @@ export default function App() {
                   <>
                     <Sidenav
                       color={sidenavColor}
-                      brand={
-                        (transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite
-                      }
+                      brand={brandWhite}
                       brandName="Planner"
                       routes={getNavRoutes(routes)}
                       onMouseEnter={handleOnMouseEnter}

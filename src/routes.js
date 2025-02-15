@@ -57,7 +57,15 @@ const routes = [
     key: "dashboard",
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/dashboard",
-    component: <Dashboard />,
+    component: Dashboard,
+  },
+  {
+    type: "collapse",
+    name: "공지사항",
+    key: "notifications",
+    icon: <Icon fontSize="small">announcement</Icon>,
+    route: "/notifications",
+    component: Notifications,
   },
   {
     type: "collapse",
@@ -65,7 +73,7 @@ const routes = [
     key: "tables",
     icon: <Icon fontSize="small">table_view</Icon>,
     route: "/tables",
-    component: <Tables />,
+    component: Tables,
   },
   {
     type: "collapse",
@@ -73,15 +81,7 @@ const routes = [
     key: "billing",
     icon: <Icon fontSize="small">receipt_long</Icon>,
     route: "/billing",
-    component: <Billing />,
-  },
-  {
-    type: "collapse",
-    name: "Notifications",
-    key: "notifications",
-    icon: <Icon fontSize="small">notifications</Icon>,
-    route: "/notifications",
-    component: <Notifications />,
+    component: Billing,
   },
   {
     type: "collapse",
@@ -89,7 +89,7 @@ const routes = [
     key: "profile",
     icon: <Icon fontSize="small">person</Icon>,
     route: "/profile",
-    component: <Profile />,
+    component: Profile,
   },
   {
     type: "collapse",
@@ -97,7 +97,7 @@ const routes = [
     key: "sign-in",
     icon: <Icon fontSize="small">login</Icon>,
     route: "/authentication/sign-in",
-    component: <SignIn />,
+    component: SignIn,
   },
   {
     type: "collapse",
@@ -105,7 +105,7 @@ const routes = [
     key: "sign-up",
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/authentication/sign-up",
-    component: <SignUp />,
+    component: SignUp,
   },
   {
     type: "collapse",
@@ -113,7 +113,7 @@ const routes = [
     key: "find-id",
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/authentication/find-id",
-    component: <FindId />,
+    component: FindId,
   },
   {
     type: "collapse",
@@ -121,7 +121,7 @@ const routes = [
     key: "find-password",
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/authentication/find-password",
-    component: <FindPassword />,
+    component: FindPassword,
   },
   {
     type: "collapse",
@@ -129,7 +129,7 @@ const routes = [
     key: "reset-password",
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/authentication/reset-password",
-    component: <ResetPassword />,
+    component: ResetPassword,
   },
 ];
 

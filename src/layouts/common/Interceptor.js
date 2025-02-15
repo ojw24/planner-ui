@@ -77,23 +77,16 @@ const Interceptor = () => {
             return axios(originalRequest);
           })
           .catch((err) => {
-            if (
-              err.response.status === 403 &&
-              err.response.data.message === "세션이 만료되었습니다. 다시 로그인 해주세요."
-            ) {
-              window.localStorage.removeItem("jwt");
-              setPopUpProps({
-                ...popupProps,
-                open: true,
-                title: "세션 만료",
-                icon: "warning",
-                color: "warning",
-                content: "세션이 만료되었습니다. 다시 로그인 해주세요.",
-                redirect: true,
-              });
-            } else {
-              return Promise.reject(error);
-            }
+            window.localStorage.removeItem("jwt");
+            setPopUpProps({
+              ...popupProps,
+              open: true,
+              title: "세션 만료",
+              icon: "warning",
+              color: "warning",
+              content: "세션이 만료되었습니다. 다시 로그인 해주세요.",
+              redirect: true,
+            });
           });
       } else if (error.response.status === 500) {
         setPopUpProps({
@@ -109,6 +102,9 @@ const Interceptor = () => {
         error.response.status === 401 &&
         error.response.data.message !== "아이디 혹은 비밀번호가 올바르지 않습니다."
       ) {
+        if (error.response.data.message === "User logged out or banned") {
+          window.localStorage.removeItem("jwt");
+        }
         setPopUpProps({
           ...popupProps,
           icon: "warning",
@@ -116,7 +112,7 @@ const Interceptor = () => {
           open: true,
           title: "오류",
           content: "잘못된 요청입니다.",
-          redirect: false,
+          redirect: error.response.data.message === "User logged out or banned",
         });
       } else if (error.response.status === 422) {
         setPopUpProps({

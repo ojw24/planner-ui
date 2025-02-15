@@ -13,10 +13,7 @@ async function LogOut() {
         resolve(response);
         return response;
       })
-      .catch((err) => {
-        reject(err);
-        return err;
-      });
+      .catch((err) => {});
   });
 }
 

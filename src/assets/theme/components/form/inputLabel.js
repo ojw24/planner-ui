@@ -34,6 +34,7 @@ const inputLabel = {
       "&.MuiInputLabel-shrink": {
         lineHeight: 1.5,
         fontSize: size.md,
+        top: "0% !important",
 
         "~ .MuiInputBase-root .MuiOutlinedInput-notchedOutline legend": {
           fontSize: "0.85em",
