@@ -117,8 +117,9 @@ function collapseText(theme, ownerState) {
     },
 
     "& span": {
+      fontFamily: "Pretendard-Regular",
       fontWeight: active ? fontWeightRegular : fontWeightLight,
-      fontSize: size.sm,
+      fontSize: "0.95rem",
       lineHeight: 0,
     },
   };

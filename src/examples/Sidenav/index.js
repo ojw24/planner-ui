@@ -68,7 +68,6 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     function handleMiniSidenav() {
       setMiniSidenav(dispatch, window.innerWidth < 1200);
       setTransparentSidenav(dispatch, window.innerWidth < 1200 ? false : transparentSidenav);
-      setWhiteSidenav(dispatch, window.innerWidth < 1200 ? false : whiteSidenav);
     }
 
     /** 
@@ -193,19 +192,6 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
         }
       />
       <List>{renderRoutes}</List>
-      {/*<MDBox p={2} mt="auto">*/}
-      {/*  <MDButton*/}
-      {/*    component="a"*/}
-      {/*    href="https://www.creative-tim.com/product/material-dashboard-pro-react"*/}
-      {/*    target="_blank"*/}
-      {/*    rel="noreferrer"*/}
-      {/*    variant="gradient"*/}
-      {/*    color={sidenavColor}*/}
-      {/*    fullWidth*/}
-      {/*  >*/}
-      {/*    upgrade to pro*/}
-      {/*  </MDButton>*/}
-      {/*</MDBox>*/}
     </SidenavRoot>
   );
 }

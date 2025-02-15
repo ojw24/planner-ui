@@ -48,7 +48,6 @@ import * as React from "react";
 
 import LogOut from "./functions";
 
-import { FindMe } from "../../../layouts/profile/function";
 import MDAvatar from "../../../components/MDAvatar";
 
 function DashboardNavbar({ absolute, light, isMini, image }) {
@@ -168,7 +167,7 @@ function DashboardNavbar({ absolute, light, isMini, image }) {
             variant="button"
             sx={{
               fontFamily: "Pretendard-light",
-              fontSize: "2vmin",
+              fontSize: "0.9rem",
             }}
           >
             마이 페이지
@@ -187,7 +186,7 @@ function DashboardNavbar({ absolute, light, isMini, image }) {
           <MDTypography
             sx={{
               fontFamily: "Pretendard-light",
-              fontSize: "2vmin",
+              fontSize: "0.9rem",
             }}
           >
             설정
@@ -200,7 +199,7 @@ function DashboardNavbar({ absolute, light, isMini, image }) {
           <MDTypography
             sx={{
               fontFamily: "Pretendard-light",
-              fontSize: "2vmin",
+              fontSize: "0.9rem",
             }}
           >
             로그아웃

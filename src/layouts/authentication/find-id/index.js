@@ -117,7 +117,7 @@ function Cover() {
     FormHelperTextProps: {
       style: {
         fontFamily: "Pretendard-Regular",
-        fontSize: "1.4vmin",
+        fontSize: "0.625rem",
         color: "red",
         marginLeft: 0,
       },

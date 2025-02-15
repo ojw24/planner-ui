@@ -137,7 +137,7 @@ function Cover() {
     FormHelperTextProps: {
       style: {
         fontFamily: "Pretendard-Regular",
-        fontSize: "1.4vmin",
+        fontSize: "0.625rem",
         color: "red",
         marginLeft: 0,
       },
@@ -236,7 +236,7 @@ function Cover() {
                   fullWidth
                   sx={{
                     fontFamily: "'Pretendard-Bold', sans-serif",
-                    fontSize: "1vw",
+                    fontSize: "0.9rem",
                     lineHeight: 1,
                   }}
                   disabled={disabled}

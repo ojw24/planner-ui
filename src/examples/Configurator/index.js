@@ -25,7 +25,7 @@ import ConfiguratorRoot from "examples/Configurator/ConfiguratorRoot";
 import { setIgnore, setOpenConfigurator, useMaterialUIController } from "context";
 import loading from "../../assets/images/loading.gif";
 
-import { UpdateUser } from "../../layouts/profile/function";
+import { updateUser } from "../../layouts/profile/function";
 import PropTypes from "prop-types";
 
 function Configurator({ userId, settings, attcFileId }) {
@@ -90,7 +90,7 @@ function Configurator({ userId, settings, attcFileId }) {
     e.preventDefault();
     setDisabled(true);
 
-    UpdateUser({ userId, setting, attcFileId })
+    updateUser({ userId, setting, attcFileId })
       .then((res) => {
         setDisabled(false);
         settings.isFriendReqNoti = setting.isFriendReqNoti;

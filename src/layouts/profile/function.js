@@ -1,20 +1,18 @@
 import React from "react";
 import axios from "axios";
 
-export async function FindMe() {
+export async function findMe() {
   return new Promise((resolve, reject) => {
     axios
       .get("/planner/api/user/profile/me")
       .then((response) => {
         resolve(response.data);
       })
-      .catch((err) => {
-        reject(err);
-      });
+      .catch((err) => {});
   });
 }
 
-export async function UpdateUser(props) {
+export async function updateUser(props) {
   return new Promise((resolve, reject) => {
     axios
       .put("/planner/api/user/" + props.userId, {
@@ -32,7 +30,7 @@ export async function UpdateUser(props) {
   });
 }
 
-export async function UploadFile(props) {
+export async function uploadFile(props) {
   const formData = new FormData();
   formData.append("name", props.name); // 일반 데이터 추가
   formData.append("file", props.file); // 파일 추가

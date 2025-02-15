@@ -40,7 +40,7 @@ function Overview() {
   });
 
   useEffect(() => {
-    func.FindMe().then((res) => {
+    func.findMe().then((res) => {
       setUser({
         userId: res.data.userId,
         name: res.data.name,
@@ -72,7 +72,7 @@ function Overview() {
     FormHelperTextProps: {
       style: {
         fontFamily: "Pretendard-Regular",
-        fontSize: "1.4vmin",
+        fontSize: "0.625rem",
         color: "red",
         marginLeft: 0,
       },
@@ -124,7 +124,7 @@ function Overview() {
     } else {
       setDisabled(true);
       func
-        .UpdateUser(user)
+        .updateUser(user)
         .then((res) => {
           setDisabled(false);
           setPopUpProps({
@@ -201,7 +201,7 @@ function Overview() {
     });
 
     func
-      .UploadFile({ name: file.name, file })
+      .uploadFile({ name: file.name, file })
       .then((res) => {
         setUser({
           ...user,
