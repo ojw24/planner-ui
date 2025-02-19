@@ -181,7 +181,9 @@ export default function App() {
   const getNavRoutes = (allRoutes) =>
     allRoutes
       .filter((route) => route.route.indexOf("/authentication"))
-      .filter((route) => route.route.indexOf("/profile"));
+      .filter((route) => route.route.indexOf("/profile"))
+      .filter((route) => route.route.indexOf("/notifications/detail"))
+      .filter((route) => route.route.indexOf("/notifications/register"));
 
   const configsButton = (
     <MDBox
