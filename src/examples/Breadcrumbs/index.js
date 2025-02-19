@@ -28,8 +28,6 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
 function Breadcrumbs({ icon, title, route, light, sx }) {
-  const routes = route.slice(0, -1);
-
   return (
     <MDBox mr={{ xs: 0, xl: 8 }}>
       <MuiBreadcrumbs
@@ -44,27 +42,12 @@ function Breadcrumbs({ icon, title, route, light, sx }) {
             component="span"
             variant="body2"
             color={light ? "white" : "dark"}
-            opacity="0.8"
+            opacity={0.8}
             sx={{ lineHeight: 0 }}
           >
             <Icon sx={sx}>{icon}</Icon>
           </MDTypography>
         </Link>
-        {routes.map((el) => (
-          <Link to={`/${el}`} key={el}>
-            <MDTypography
-              component="span"
-              variant="button"
-              fontWeight="regular"
-              textTransform="capitalize"
-              color={light ? "white" : "dark"}
-              opacity={light ? 0.8 : 0.5}
-              sx={{ lineHeight: 0 }}
-            >
-              {el}
-            </MDTypography>
-          </Link>
-        ))}
         <MDTypography
           variant="button"
           fontWeight="regular"
@@ -91,10 +74,10 @@ Breadcrumbs.defaultProps = {
 // Typechecking props for the Breadcrumbs
 Breadcrumbs.propTypes = {
   icon: PropTypes.node.isRequired,
-  title: PropTypes.string.isRequired,
+  title: PropTypes.string,
   route: PropTypes.oneOfType([PropTypes.string, PropTypes.array]).isRequired,
   light: PropTypes.bool,
-  sx: PropTypes.object,
+  sx: PropTypes.func,
 };
 
 export default Breadcrumbs;

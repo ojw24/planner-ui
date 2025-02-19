@@ -234,6 +234,7 @@ function Overview() {
             mx: 3,
             py: 2,
             px: 2,
+            height: "30.7231rem",
           }}
         >
           <Grid container mt={2} alignItems="center" justifyContent="center">

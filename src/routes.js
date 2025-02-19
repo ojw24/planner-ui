@@ -40,6 +40,8 @@ import Dashboard from "layouts/dashboard";
 import Tables from "layouts/tables";
 import Billing from "layouts/billing";
 import Notifications from "layouts/notifications";
+import Notification from "layouts/notifications/detail";
+import NotificationRegister from "layouts/notifications/register";
 import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
@@ -66,6 +68,22 @@ const routes = [
     icon: <Icon fontSize="small">announcement</Icon>,
     route: "/notifications",
     component: Notifications,
+  },
+  {
+    type: "collapse",
+    name: "공지사항 상세",
+    key: "notification",
+    icon: <Icon fontSize="small">announcement</Icon>,
+    route: "/notifications/detail/:noticeId",
+    component: Notification,
+  },
+  {
+    type: "collapse",
+    name: "공지사항 등록",
+    key: "notification-register",
+    icon: <Icon fontSize="small">announcement</Icon>,
+    route: "/notifications/register",
+    component: NotificationRegister,
   },
   {
     type: "collapse",

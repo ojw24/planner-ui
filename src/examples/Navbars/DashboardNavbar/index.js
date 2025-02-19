@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 // react-router components
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, matchPath } from "react-router-dom";
 import routes from "routes";
 
 // prop-types is a library for typechecking of props.
@@ -54,7 +54,7 @@ function DashboardNavbar({ absolute, light, isMini, image }) {
   const [controller, dispatch] = useMaterialUIController();
   const { transparentNavbar, fixedNavbar, openConfigurator, darkMode, ignore } = controller;
   const [openMenu, setOpenMenu] = useState(false);
-  const route = useLocation().pathname.split("/").slice(1);
+  const route = useLocation().pathname;
   const [profile, setProfile] = useState(image);
 
   useEffect(() => {
@@ -126,7 +126,7 @@ function DashboardNavbar({ absolute, light, isMini, image }) {
   const handleIgnore = () => setIgnore(dispatch, !ignore);
 
   const getName = (allRoutes, key) => {
-    return key === "" ? "Dashboard" : allRoutes.find((route) => route.key === key).name;
+    return key === "" ? "Dashboard" : allRoutes.find((route) => matchPath(route.route, key))?.name;
   };
 
   const renderAccountMenu = () => (
@@ -252,7 +252,7 @@ function DashboardNavbar({ absolute, light, isMini, image }) {
         <MDBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini })}>
           <Breadcrumbs
             icon="home"
-            title={getName(routes, route[route.length - 1])}
+            title={getName(routes, route)}
             route={route}
             light={light}
             sx={iconsStyle}
