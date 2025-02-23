@@ -37,8 +37,8 @@ Coded by www.creative-tim.com
 
 // Material Dashboard 2 React layouts
 import Dashboard from "layouts/dashboard";
-import Tables from "layouts/tables";
 import Billing from "layouts/billing";
+import Community from "layouts/community";
 import Notifications from "layouts/notifications";
 import Notification from "layouts/notifications/detail";
 import NotificationRegister from "layouts/notifications/register";
@@ -63,6 +63,22 @@ const routes = [
   },
   {
     type: "collapse",
+    name: "커뮤니티",
+    key: "community",
+    icon: <Icon fontSize="small">forum</Icon>,
+    route: "/community",
+    component: Community,
+  },
+  {
+    type: "collapse",
+    name: "Billing",
+    key: "billing",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/billing",
+    component: Billing,
+  },
+  {
+    type: "collapse",
     name: "공지사항",
     key: "notifications",
     icon: <Icon fontSize="small">announcement</Icon>,
@@ -84,22 +100,6 @@ const routes = [
     icon: <Icon fontSize="small">announcement</Icon>,
     route: "/notifications/register",
     component: NotificationRegister,
-  },
-  {
-    type: "collapse",
-    name: "Tables",
-    key: "tables",
-    icon: <Icon fontSize="small">table_view</Icon>,
-    route: "/tables",
-    component: Tables,
-  },
-  {
-    type: "collapse",
-    name: "Billing",
-    key: "billing",
-    icon: <Icon fontSize="small">receipt_long</Icon>,
-    route: "/billing",
-    component: Billing,
   },
   {
     type: "collapse",

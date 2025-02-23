@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from "react";
+import React, { useMemo, useEffect, useState, useRef } from "react";
 
 // prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
@@ -11,28 +11,19 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
 import TableRow from "@mui/material/TableRow";
-import Icon from "@mui/material/Icon";
 import Autocomplete from "@mui/material/Autocomplete";
+import Tooltip from "@mui/material/Tooltip";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
-import MDPagination from "components/MDPagination";
 
 // Material Dashboard 2 React example components
 import DataTableHeadCell from "examples/Tables/DataTable/DataTableHeadCell";
 import DataTableBodyCell from "examples/Tables/DataTable/DataTableBodyCell";
 
-function DataTable({
-  entriesPerPage,
-  canSearch,
-  showTotalEntries,
-  table,
-  pagination,
-  isSorted,
-  noEndBorder,
-}) {
+function DataTable({ entriesPerPage, canSearch, table, isSorted, noEndBorder }) {
   const defaultValue = entriesPerPage.defaultValue ? entriesPerPage.defaultValue : 10;
   const entries = entriesPerPage.entries
     ? entriesPerPage.entries.map((el) => el.toString())
@@ -54,15 +45,9 @@ function DataTable({
     prepareRow,
     rows,
     page,
-    pageOptions,
-    canPreviousPage,
-    canNextPage,
-    gotoPage,
-    nextPage,
-    previousPage,
     setPageSize,
     setGlobalFilter,
-    state: { pageIndex, pageSize, globalFilter },
+    state: { pageSize, globalFilter },
   } = tableInstance;
 
   // Set the default value for the entries per page when component mounts
@@ -70,28 +55,6 @@ function DataTable({
 
   // Set the entries per page value based on the select value
   const setEntriesPerPage = (value) => setPageSize(value);
-
-  // Render the paginations
-  const renderPagination = pageOptions.map((option) => (
-    <MDPagination
-      item
-      key={option}
-      onClick={() => gotoPage(Number(option))}
-      active={pageIndex === option}
-    >
-      {option + 1}
-    </MDPagination>
-  ));
-
-  // Handler for the input to set the pagination index
-  const handleInputPagination = ({ target: { value } }) =>
-    value > pageOptions.length || value < 0 ? gotoPage(0) : gotoPage(Number(value));
-
-  // Customized page options starting from 1
-  const customizedPageOptions = pageOptions.map((option) => option + 1);
-
-  // Setting value for the pagination input
-  const handleInputPaginationValue = ({ target: value }) => gotoPage(Number(value.value - 1));
 
   // Search input value state
   const [search, setSearch] = useState(globalFilter);
@@ -116,19 +79,24 @@ function DataTable({
     return sortedValue;
   };
 
-  // Setting the entries starting point
-  const entriesStart = pageIndex === 0 ? pageIndex + 1 : pageIndex * pageSize + 1;
+  const spanRefs = useRef(new Map()); // span 태그의 ref 저장
+  const [overflowStates, setOverflowStates] = useState({});
 
-  // Setting the entries ending point
-  let entriesEnd;
+  useEffect(() => {
+    const checkOverflow = () => {
+      const newStates = {};
+      spanRefs.current.forEach((el, key) => {
+        if (el) {
+          newStates[key] = el.scrollWidth > el.clientWidth;
+        }
+      });
+      setOverflowStates(newStates);
+    };
 
-  if (pageIndex === 0) {
-    entriesEnd = pageSize;
-  } else if (pageIndex === pageOptions.length - 1) {
-    entriesEnd = rows.length;
-  } else {
-    entriesEnd = pageSize * (pageIndex + 1);
-  }
+    checkOverflow(); // 초기 체크
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, [page]);
 
   return (
     <TableContainer sx={{ boxShadow: "none" }}>
@@ -168,7 +136,13 @@ function DataTable({
           )}
         </MDBox>
       ) : null}
-      <Table {...getTableProps()}>
+      <Table
+        {...getTableProps()}
+        sx={{
+          tableLayout: "fixed",
+          width: "100%",
+        }}
+      >
         <MDBox component="thead">
           {headerGroups.map((headerGroup, key) => (
             <TableRow key={key} {...headerGroup.getHeaderGroupProps()}>
@@ -187,21 +161,53 @@ function DataTable({
           ))}
         </MDBox>
         <TableBody {...getTableBodyProps()}>
-          {page.map((row, key) => {
+          {page.map((row, rowIndex) => {
             prepareRow(row);
             return (
-              <TableRow key={key} {...row.getRowProps()}>
-                {row.cells.map((cell, idx) => (
-                  <DataTableBodyCell
-                    key={idx}
-                    noBorder={noEndBorder && rows.length - 1 === key}
-                    align={cell.column.cellAlign ? cell.column.cellAlign : "center"}
-                    isTop={row.original.isTop}
-                    {...cell.getCellProps()}
-                  >
-                    {cell.render("Cell")}
-                  </DataTableBodyCell>
-                ))}
+              <TableRow key={rowIndex} {...row.getRowProps()}>
+                {row.cells.map((cell, cellIndex) => {
+                  const isReactElement = React.isValidElement(cell.value);
+                  const text = isReactElement ? cell.value.props.children || "" : cell.value;
+                  const textStr = String(text);
+
+                  return (
+                    <DataTableBodyCell
+                      key={cellIndex}
+                      noBorder={noEndBorder && rows.length - 1 === rowIndex}
+                      align={cell.column.cellAlign ? cell.column.cellAlign : "center"}
+                      isTop={row.original.isTop}
+                      {...cell.getCellProps()}
+                    >
+                      <Tooltip
+                        title={overflowStates[`${rowIndex}-${cellIndex}`] ? textStr : ""}
+                        arrow
+                        sx={{
+                          maxWidth: "100%",
+                        }}
+                        componentsProps={{
+                          tooltip: {
+                            sx: { fontFamily: "Pretendard-Bold" },
+                          },
+                        }}
+                      >
+                        <span
+                          ref={(el) => {
+                            if (el) spanRefs.current.set(`${rowIndex}-${cellIndex}`, el);
+                          }}
+                          style={{
+                            display: "block",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "100%",
+                          }}
+                        >
+                          {isReactElement ? React.cloneElement(cell.value, {}, textStr) : textStr}
+                        </span>
+                      </Tooltip>
+                    </DataTableBodyCell>
+                  );
+                })}
               </TableRow>
             );
           })}
@@ -216,7 +222,6 @@ DataTable.defaultProps = {
   entriesPerPage: { defaultValue: 10, entries: [5, 10, 15, 20, 25] },
   canSearch: false,
   showTotalEntries: true,
-  pagination: { variant: "gradient", color: "info" },
   isSorted: true,
   noEndBorder: false,
 };
@@ -233,19 +238,6 @@ DataTable.propTypes = {
   canSearch: PropTypes.bool,
   showTotalEntries: PropTypes.bool,
   table: PropTypes.objectOf(PropTypes.array).isRequired,
-  pagination: PropTypes.shape({
-    variant: PropTypes.oneOf(["contained", "gradient"]),
-    color: PropTypes.oneOf([
-      "primary",
-      "secondary",
-      "info",
-      "success",
-      "warning",
-      "error",
-      "dark",
-      "light",
-    ]),
-  }),
   isSorted: PropTypes.bool,
   noEndBorder: PropTypes.bool,
 };

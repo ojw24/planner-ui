@@ -100,6 +100,7 @@ function Cover() {
     },
     validationSchema: Yup.object({
       id: Yup.string()
+        .min(4, "아아디는 4글자 이상이어야 합니다.")
         .max(255)
         .required("* 아이디를 입력하세요")
         .test("dupCheck", "* 이미 사용 중인 아이디입니다", function (v) {
@@ -126,7 +127,7 @@ function Cover() {
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (!signUp.id || !dupCheck()) {
+    if (!signUp.id || !dupCheck() || signUp.id.length < 4) {
       formik.setFieldTouched("id", true);
       textRef.current[0]?.focus();
     } else if (!signUp.password) {
