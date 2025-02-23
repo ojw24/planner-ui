@@ -6,7 +6,6 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 // @mui material components
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import Icon from "@mui/material/Icon";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -142,9 +141,6 @@ export default function App() {
     }
   };
 
-  // Change the openConfigurator state
-  const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
-
   // Setting the dir attribute for the body element
   useEffect(() => {
     document.body.setAttribute("dir", direction);
@@ -168,7 +164,13 @@ export default function App() {
             exact
             path={route.route}
             element={
-              <route.component isAdmin={route.key === "notifications" ? user.isAdmin : undefined} />
+              <route.component
+                isAdmin={
+                  route.key === "notifications" || route.key === "community"
+                    ? user.isAdmin
+                    : undefined
+                }
+              />
             }
             key={route.key}
           />
@@ -184,30 +186,6 @@ export default function App() {
       .filter((route) => route.route.indexOf("/profile"))
       .filter((route) => route.route.indexOf("/notifications/detail"))
       .filter((route) => route.route.indexOf("/notifications/register"));
-
-  const configsButton = (
-    <MDBox
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      width="3.25rem"
-      height="3.25rem"
-      bgColor="white"
-      shadow="sm"
-      borderRadius="50%"
-      position="fixed"
-      right="2rem"
-      bottom="2rem"
-      zIndex={99}
-      color="dark"
-      sx={{ cursor: "pointer" }}
-      onClick={handleConfiguratorOpen}
-    >
-      <Icon fontSize="small" color="inherit">
-        settings
-      </Icon>
-    </MDBox>
-  );
 
   const [isHalf, setIsHalf] = useState(false);
 

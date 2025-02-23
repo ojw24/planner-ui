@@ -11,6 +11,7 @@ import Divider from "@mui/material/Divider";
 import MDButton from "../../../components/MDButton";
 import loading from "../../../assets/images/loading.gif";
 import Confirm from "components/Confirm";
+import MDSnackbar from "../../../components/MDSnackbar";
 
 function Notification() {
   const navigate = useNavigate();
@@ -27,6 +28,15 @@ function Notification() {
     updtDtm: "",
   });
 
+  const [popupProps, setPopUpProps] = useState({
+    redirect: false,
+    open: false,
+    icon: "warning",
+    color: "error",
+    title: "",
+    content: "",
+  });
+
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
@@ -38,16 +48,28 @@ function Notification() {
   };
 
   useEffect(() => {
-    findNotice(noticeId).then((res) => {
-      setNotice({
-        ...notice,
-        title: res.data.title,
-        content: res.data.content,
-        isTop: res.data.isTop,
-        regDtm: res.data.regDtm.replace("T", " "),
-        updtDtm: res.data.updtDtm ? res.data.updtDtm.replace("T", " ") : '"',
+    findNotice(noticeId)
+      .then((res) => {
+        setNotice({
+          ...notice,
+          title: res.data.title,
+          content: res.data.content,
+          isTop: res.data.isTop,
+          regDtm: res.data.regDtm.replace("T", " "),
+          updtDtm: res.data.updtDtm ? res.data.updtDtm.replace("T", " ") : '"',
+        });
+      })
+      .catch((rej) => {
+        setPopUpProps({
+          ...popupProps,
+          redirect: true,
+          open: true,
+          icon: "warning",
+          color: "warning",
+          title: "공지사항",
+          content: "존재하지 않는 공지사항입니다.",
+        });
       });
-    });
   }, []);
 
   const dividerStyles = {
@@ -79,8 +101,24 @@ function Notification() {
       })
       .catch((rej) => {
         handleClose();
+        setPopUpProps({
+          ...popupProps,
+          redirect: true,
+          open: true,
+          icon: "warning",
+          color: "warning",
+          title: "공지사항",
+          content: "존재하지 않는 공지사항입니다.",
+        });
       });
   };
+
+  function closePopUp(redirect) {
+    setPopUpProps({ ...popupProps, open: false });
+    if (redirect) {
+      window.history.back();
+    }
+  }
 
   return (
     <>
@@ -125,7 +163,6 @@ function Notification() {
             onClick={() => window.history.back()} // 뒤로 가기
             sx={{
               fontFamily: "'Pretendard-Light', sans-serif",
-              // marginX: 3.5,
               cursor: "pointer", // 마우스 호버 시 커서 변경
               "&:hover": {
                 opacity: 0.8, // 호버 시 약간 투명하게
@@ -187,6 +224,18 @@ function Notification() {
         onClose={handleClose}
         agreeFunc={handleClickDelete}
       />
+      {popupProps.open && (
+        <MDSnackbar
+          color={popupProps.color}
+          icon={popupProps.icon}
+          title={popupProps.title}
+          content={popupProps.content}
+          open={popupProps.open}
+          onClose={() => closePopUp(popupProps.redirect)}
+          close={() => closePopUp(popupProps.redirect)}
+          bgWhite
+        />
+      )}
     </>
   );
 }

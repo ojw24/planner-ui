@@ -40,7 +40,9 @@ export async function findNotice(noticeId) {
       .then((response) => {
         resolve(response.data);
       })
-      .catch((err) => {});
+      .catch((err) => {
+        if (err.response.status === 404) reject(err);
+      });
   });
 }
 
@@ -55,7 +57,9 @@ export async function updateNotice(props) {
       .then((response) => {
         resolve(response.data);
       })
-      .catch((err) => {});
+      .catch((err) => {
+        if (err.response.status === 404) reject(err);
+      });
   });
 }
 
@@ -66,6 +70,8 @@ export async function deleteNotice(noticeId) {
       .then((response) => {
         resolve(response);
       })
-      .catch((err) => {});
+      .catch((err) => {
+        if (err.response.status === 404) reject(err);
+      });
   });
 }

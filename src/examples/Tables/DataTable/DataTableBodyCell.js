@@ -36,7 +36,10 @@ function DataTableBodyCell({ noBorder, align, children, isTop }) {
         display="inline-block"
         width="max-content"
         color={isTop ? "dark" : "text"}
-        sx={{ verticalAlign: "middle" }}
+        sx={{
+          verticalAlign: "middle",
+          maxWidth: "100%",
+        }}
       >
         {children}
       </MDBox>

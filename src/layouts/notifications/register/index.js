@@ -147,6 +147,15 @@ function Register() {
           })
           .catch((rej) => {
             setDisabled(false);
+            setPopUpProps({
+              ...popupProps,
+              redirect: true,
+              open: true,
+              icon: "warning",
+              color: "warning",
+              title: "공지사항",
+              content: "존재하지 않는 공지사항입니다.",
+            });
           });
       } else {
         createNotice(notice)
