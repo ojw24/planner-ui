@@ -39,6 +39,8 @@ Coded by www.creative-tim.com
 import Dashboard from "layouts/dashboard";
 import Billing from "layouts/billing";
 import Community from "layouts/community";
+import BoardMemo from "layouts/community/detail";
+import BoardMemoRegister from "layouts/community/register";
 import Notifications from "layouts/notifications";
 import Notification from "layouts/notifications/detail";
 import NotificationRegister from "layouts/notifications/register";
@@ -68,6 +70,22 @@ const routes = [
     icon: <Icon fontSize="small">forum</Icon>,
     route: "/community",
     component: Community,
+  },
+  {
+    type: "collapse",
+    name: "커뮤니티 상세",
+    key: "board-memo",
+    icon: <Icon fontSize="small">forum</Icon>,
+    route: "/community/detail/:boardMemoId",
+    component: BoardMemo,
+  },
+  {
+    type: "collapse",
+    name: "커뮤니티 등록",
+    key: "board-memo-register",
+    icon: <Icon fontSize="small">forum</Icon>,
+    route: "/community/register",
+    component: BoardMemoRegister,
   },
   {
     type: "collapse",

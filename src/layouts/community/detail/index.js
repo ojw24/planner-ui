@@ -5,7 +5,7 @@ import Card from "@mui/material/Card";
 
 import MDBox from "../../../components/MDBox";
 
-import { deleteNotice, findNotice } from "../function";
+import { deleteBoardMemo, findBoardMemo } from "../function";
 import MDTypography from "../../../components/MDTypography";
 import Divider from "@mui/material/Divider";
 import MDButton from "../../../components/MDButton";
@@ -13,17 +13,21 @@ import loading from "../../../assets/images/loading.gif";
 import Confirm from "components/Confirm";
 import MDSnackbar from "../../../components/MDSnackbar";
 
-function Notification() {
+function BoardMemo() {
   const navigate = useNavigate();
   const location = useLocation();
   const isAdmin = location.state?.isAdmin;
+  const myId = location.state?.myId;
   const [disabled, setDisabled] = useState(false);
-  const { noticeId } = useParams();
-  const [notice, setNotice] = useState({
-    noticeId: noticeId,
+  const boardId = 1;
+  const { boardMemoId } = useParams();
+  const [boardMemo, setBoardMemo] = useState({
+    boardMemoId: boardMemoId,
+    userId: "",
+    userName: "",
     title: "",
     content: "",
-    isTop: false,
+    hit: 0,
     regDtm: "",
     updtDtm: "",
   });
@@ -48,13 +52,15 @@ function Notification() {
   };
 
   useEffect(() => {
-    findNotice(noticeId)
+    findBoardMemo(boardId, boardMemoId)
       .then((res) => {
-        setNotice({
-          ...notice,
+        setBoardMemo({
+          ...boardMemo,
+          userId: res.data.userId,
+          userName: res.data.userName,
           title: res.data.title,
           content: res.data.content,
-          isTop: res.data.isTop,
+          hit: res.data.hit,
           regDtm: res.data.regDtm.replace("T", " "),
           updtDtm: res.data.updtDtm ? res.data.updtDtm.replace("T", " ") : '"',
         });
@@ -66,8 +72,8 @@ function Notification() {
           open: true,
           icon: "warning",
           color: "warning",
-          title: "공지사항",
-          content: "존재하지 않는 공지사항입니다.",
+          title: "커뮤니티",
+          content: "존재하지 않는 게시글입니다.",
         });
       });
   }, []);
@@ -84,19 +90,19 @@ function Notification() {
 
   const handleClickUpdate = () => {
     setDisabled(true);
-    navigate("/notifications/register", {
-      state: { isAdmin, notice },
+    navigate("/community/register", {
+      state: { isAdmin, myId, boardMemo },
     });
   };
 
   const handleClickDelete = (e) => {
     e.preventDefault();
 
-    deleteNotice(noticeId)
+    deleteBoardMemo(1, boardMemoId)
       .then((res) => {
         handleClose();
-        navigate("/notifications", {
-          state: { isAdmin },
+        navigate("/community", {
+          state: { isAdmin, myId },
         });
       })
       .catch((rej) => {
@@ -107,8 +113,8 @@ function Notification() {
           open: true,
           icon: "warning",
           color: "warning",
-          title: "공지사항",
-          content: "존재하지 않는 공지사항입니다.",
+          title: "커뮤니티",
+          content: "존재하지 않는 게시글입니다.",
         });
       });
   };
@@ -137,11 +143,13 @@ function Notification() {
         >
           <MDBox mx={2} mt={2}>
             <MDTypography sx={{ fontFamily: "Pretendard-Bold", fontSize: "2rem" }}>
-              {notice.title}
+              {boardMemo.title}
             </MDTypography>
-            {/*<Divider sx={dividerStyles} />*/}
             <MDTypography sx={{ fontFamily: "Pretendard-Light", fontSize: "1rem" }}>
-              {notice.regDtm}
+              {boardMemo.regDtm}
+              &nbsp;&nbsp;
+              <b>{boardMemo.userName + "(" + boardMemo.userId.slice(0, -3) + "***" + ")"}</b>
+              &nbsp;&nbsp;조회수 <b>{boardMemo.hit}</b>
             </MDTypography>
             <Divider sx={dividerStyles} />
             <MDTypography
@@ -151,7 +159,7 @@ function Notification() {
                 whiteSpace: "pre-wrap",
               }}
             >
-              {notice.content.replace(/\\n/g, "\n")}
+              {boardMemo.content.replace(/\\n/g, "\n")}
             </MDTypography>
           </MDBox>
         </Card>
@@ -171,7 +179,7 @@ function Notification() {
           >
             &lt;&nbsp;목록으로
           </MDTypography>
-          {isAdmin ? (
+          {isAdmin || myId === boardMemo.userId ? (
             <>
               <MDButton
                 type="button"
@@ -240,4 +248,4 @@ function Notification() {
   );
 }
 
-export default Notification;
+export default BoardMemo;
