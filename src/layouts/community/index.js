@@ -19,7 +19,7 @@ import MDTypography from "../../components/MDTypography";
 import MDInput from "../../components/MDInput";
 import MDButton from "../../components/MDButton";
 
-function Community({ isAdmin }) {
+function Community({ isAdmin, myId }) {
   const navigate = useNavigate();
   const location = useLocation();
   const effectRan = useRef(false);
@@ -55,12 +55,12 @@ function Community({ isAdmin }) {
           <span
             onClick={() => {
               navigate(
-                `/community/detail/${item.boardMemoId}?page=${res.data.number}
-                ${searchParams.searchType ? `&searchType=${searchParams.searchType}` : "title"}
-                ${searchParams.searchValue ? `&searchValue=${searchParams.searchValue}` : ""}
+                `/community/detail/${item.boardMemoId}?page=${res.data.number}&searchType=${
+                  searchParams.searchType || "title"
+                }${searchParams.searchValue ? `&searchValue=${searchParams.searchValue}` : ""}
                 `,
                 {
-                  state: { isAdmin },
+                  state: { isAdmin, myId },
                 }
               );
             }}
@@ -185,14 +185,14 @@ function Community({ isAdmin }) {
     window.history.pushState(
       { page: pageIndex, searchType: searchType, searchValue: searchValue },
       "",
-      `?page=${pageIndex}
-                ${searchType ? `&searchType=${searchType}` : "title"}
-                ${searchValue ? `&searchValue=${searchValue}` : ""}
+      `?page=${pageIndex}&searchType=${searchParams.searchType || "title"}${
+        searchValue ? `&searchValue=${searchValue}` : ""
+      }
                 `
     );
-    const newUrl = `/community?page=${newPage}
-      ${searchType ? `&searchType=${searchType}` : "title"}
-      ${searchValue ? `&searchValue=${searchValue}` : ""}`;
+    const newUrl = `/community?page=${newPage}&searchType=${searchParams.searchType || "title"}${
+      searchValue ? `&searchValue=${searchValue}` : ""
+    }`;
     window.history.replaceState(null, "", newUrl);
   };
 
@@ -211,12 +211,12 @@ function Community({ isAdmin }) {
           <span
             onClick={() => {
               navigate(
-                `/community/detail/${item.boardMemoId}?page=${res.data.number}
-                ${searchParams.searchType ? `&searchType=${searchParams.searchType}` : "title"}
-                ${searchParams.searchValue ? `&searchValue=${searchParams.searchValue}` : ""}
+                `/community/detail/${item.boardMemoId}?page=${res.data.number}&searchType=${
+                  searchParams.searchType || "title"
+                }${searchParams.searchValue ? `&searchValue=${searchParams.searchValue}` : ""}
                 `,
                 {
-                  state: { isAdmin },
+                  state: { isAdmin, myId },
                 }
               );
             }}
@@ -241,6 +241,12 @@ function Community({ isAdmin }) {
     }
   };
 
+  const handleRegister = () => {
+    navigate("/community/register", {
+      state: { isAdmin, myId },
+    });
+  };
+
   const search = () => {
     setDisabled(true);
     const updatedParams = {
@@ -258,12 +264,12 @@ function Community({ isAdmin }) {
           <span
             onClick={() => {
               navigate(
-                `/community/detail/${item.boardMemoId}?page=${res.data.number}
-                ${searchParams.searchType ? `&searchType=${searchParams.searchType}` : "title"}
-                ${searchParams.searchValue ? `&searchValue=${searchParams.searchValue}` : ""}
+                `/community/detail/${item.boardMemoId}?page=${res.data.number}&searchType=${
+                  searchParams.searchType || "title"
+                }${searchParams.searchValue ? `&searchValue=${searchParams.searchValue}` : ""}
                 `,
                 {
-                  state: { isAdmin },
+                  state: { isAdmin, myId },
                 }
               );
             }}
@@ -537,7 +543,7 @@ function Community({ isAdmin }) {
                       right: "3rem",
                     }}
                     disabled={disabled}
-                    //onClick={handleRegister}
+                    onClick={handleRegister}
                   >
                     {disabled ? (
                       <MDBox component="img" src={loading} alt="loading" width="1rem" />
@@ -562,7 +568,7 @@ function Community({ isAdmin }) {
                       marginLeft: "auto",
                     }}
                     disabled={disabled}
-                    //onClick={handleRegister}
+                    onClick={handleRegister}
                   >
                     {disabled ? (
                       <MDBox component="img" src={loading} alt="loading" width="1rem" />
@@ -582,10 +588,12 @@ function Community({ isAdmin }) {
 
 Community.defaultProps = {
   isAdmin: false,
+  myId: "",
 };
 
 Community.propTypes = {
   isAdmin: PropTypes.bool.isRequired,
+  myId: PropTypes.string.isRequired,
 };
 
 export default Community;

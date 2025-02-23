@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 
 import MDButton from "../MDButton";
 
-import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -45,7 +44,7 @@ export default function ResponsiveDialog({ title, content, open, onClose, agreeF
               fontFamily: "'Pretendard-Regular', sans-serif",
               fontSize: "0.9rem",
               paddingBottom: 0.5,
-              whiteSpace: "pre-line",
+              whiteSpace: "pre-wrap",
             }}
           >
             {content.replace(/\\n/g, "\n")}

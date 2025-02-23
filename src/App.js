@@ -43,6 +43,7 @@ import Interceptor from "layouts/common/Interceptor";
 import { findMe } from "./layouts/profile/function";
 
 export default function App() {
+  const [isReady, setIsReady] = useState(false);
   const [user, setUser] = useState({
     userId: "",
     name: "",
@@ -84,6 +85,7 @@ export default function App() {
             path: res.data.file ? res.data.file.path : "",
           },
         }));
+        setIsReady(true);
       });
     }
   }, []);
@@ -152,8 +154,8 @@ export default function App() {
     document.scrollingElement.scrollTop = 0;
   }, [pathname]);
 
-  const getRoutes = (allRoutes) =>
-    allRoutes.map((route) => {
+  const getRoutes = (allRoutes) => {
+    return allRoutes.map((route) => {
       if (route.collapse) {
         return getRoutes(route.collapse);
       }
@@ -170,6 +172,7 @@ export default function App() {
                     ? user.isAdmin
                     : undefined
                 }
+                myId={route.key === "community" ? user.userId : undefined}
               />
             }
             key={route.key}
@@ -179,11 +182,14 @@ export default function App() {
 
       return null;
     });
+  };
 
   const getNavRoutes = (allRoutes) =>
     allRoutes
       .filter((route) => route.route.indexOf("/authentication"))
       .filter((route) => route.route.indexOf("/profile"))
+      .filter((route) => route.route.indexOf("/community/detail"))
+      .filter((route) => route.route.indexOf("/community/register"))
       .filter((route) => route.route.indexOf("/notifications/detail"))
       .filter((route) => route.route.indexOf("/notifications/register"));
 
@@ -259,10 +265,14 @@ export default function App() {
                     attcFileId={user.file.attcFileId}
                   />
                 )}
-                <Routes>
-                  {getRoutes(routes)}
-                  <Route path="*" element={<Navigate to="/dashboard" />} />
-                </Routes>
+                {isReady ? (
+                  <Routes>
+                    {getRoutes(routes)}
+                    <Route path="*" element={<Navigate to="/dashboard" />} />
+                  </Routes>
+                ) : (
+                  <></>
+                )}
               </MDBox>
             </DashboardLayout>
           ) : (
