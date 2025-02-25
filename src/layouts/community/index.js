@@ -490,9 +490,6 @@ function Community({ isAdmin, myId }) {
                         <MenuItem {...typeStyles} value="title">
                           제목
                         </MenuItem>
-                        <MenuItem {...typeStyles} value="id">
-                          작성자 아이디
-                        </MenuItem>
                         <MenuItem {...typeStyles} value="name">
                           작성자 이름
                         </MenuItem>

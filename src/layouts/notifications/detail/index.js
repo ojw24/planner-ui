@@ -139,7 +139,6 @@ function Notification() {
             <MDTypography sx={{ fontFamily: "Pretendard-Bold", fontSize: "2rem" }}>
               {notice.title}
             </MDTypography>
-            {/*<Divider sx={dividerStyles} />*/}
             <MDTypography sx={{ fontFamily: "Pretendard-Light", fontSize: "1rem" }}>
               {notice.regDtm}
             </MDTypography>
@@ -151,7 +150,7 @@ function Notification() {
                 whiteSpace: "pre-wrap",
               }}
             >
-              {notice.content.replace(/\\n/g, "\n")}
+              {notice.content + "\n"}
             </MDTypography>
           </MDBox>
         </Card>
