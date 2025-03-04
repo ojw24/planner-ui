@@ -13,6 +13,7 @@ import MDBox from "components/MDBox";
 // Material Dashboard 2 React example components
 import Sidenav from "examples/Sidenav";
 import Configurator from "examples/Configurator";
+import Friend from "examples/Friend";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 
@@ -256,19 +257,23 @@ export default function App() {
                       settings={user.setting}
                       attcFileId={user.file.attcFileId}
                     />
+                    <Friend />
                   </>
                 )}
                 {layout === "vr" && (
-                  <Configurator
-                    userId={user.userId}
-                    settings={user.setting}
-                    attcFileId={user.file.attcFileId}
-                  />
+                  <>
+                    <Configurator
+                      userId={user.userId}
+                      settings={user.setting}
+                      attcFileId={user.file.attcFileId}
+                    />
+                    <Friend />
+                  </>
                 )}
                 {isReady ? (
                   <Routes>
                     {getRoutes(routes)}
-                    <Route path="*" element={<Navigate to="/dashboard" />} />
+                    <Route path="*" element={<Navigate to="/profile" />} />
                   </Routes>
                 ) : (
                   <></>

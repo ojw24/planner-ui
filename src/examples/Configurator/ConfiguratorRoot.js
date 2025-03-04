@@ -19,7 +19,7 @@ import { styled } from "@mui/material/styles";
 
 export default styled(Drawer)(({ theme, ownerState }) => {
   const { boxShadows, functions, transitions } = theme;
-  const { openConfigurator } = ownerState;
+  const { openConfigurator, openFriend } = ownerState;
 
   const configuratorWidth = 360;
   const { lg } = boxShadows;
@@ -30,6 +30,11 @@ export default styled(Drawer)(({ theme, ownerState }) => {
     width: configuratorWidth,
     left: "initial",
     right: 0,
+    overflow: "hidden",
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    //scrollbarWidth: "none",
     transition: transitions.create("right", {
       easing: transitions.easing.sharp,
       duration: transitions.duration.short,
@@ -54,7 +59,7 @@ export default styled(Drawer)(({ theme, ownerState }) => {
       borderRadius: 0,
       boxShadow: lg,
       overflowY: "auto",
-      ...(openConfigurator ? drawerOpenStyles() : drawerCloseStyles()),
+      ...(openConfigurator || openFriend ? drawerOpenStyles() : drawerCloseStyles()),
     },
   };
 });

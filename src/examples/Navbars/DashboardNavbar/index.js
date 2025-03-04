@@ -37,10 +37,13 @@ import {
   useMaterialUIController,
   setTransparentNavbar,
   setOpenConfigurator,
+  setOpenFriend,
   setIgnore,
+  setIgnoreF,
 } from "context";
 import MenuItem from "@mui/material/MenuItem";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import GroupIcon from "@mui/icons-material/Group";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
@@ -52,7 +55,15 @@ import MDAvatar from "../../../components/MDAvatar";
 
 function DashboardNavbar({ absolute, light, isMini, image }) {
   const [controller, dispatch] = useMaterialUIController();
-  const { transparentNavbar, fixedNavbar, openConfigurator, darkMode, ignore } = controller;
+  const {
+    transparentNavbar,
+    fixedNavbar,
+    openConfigurator,
+    openFriend,
+    darkMode,
+    ignore,
+    ignoreF,
+  } = controller;
   const [openMenu, setOpenMenu] = useState(false);
   const route = useLocation().pathname;
   const [profile, setProfile] = useState(image);
@@ -82,6 +93,7 @@ function DashboardNavbar({ absolute, light, isMini, image }) {
 
   const handleOpenMenu = (event) => setOpenMenu(event.currentTarget);
   const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
+  const handleFriendOpen = () => setOpenFriend(dispatch, !openFriend);
   const handleCloseMenu = () => setOpenMenu(false);
 
   // Render the notifications menu
@@ -124,6 +136,7 @@ function DashboardNavbar({ absolute, light, isMini, image }) {
   };
 
   const handleIgnore = () => setIgnore(dispatch, !ignore);
+  const handleIgnoreF = () => setIgnoreF(dispatch, !ignoreF);
 
   const getName = (allRoutes, key) => {
     return key === "" ? "Dashboard" : allRoutes.find((route) => matchPath(route.route, key))?.name;
@@ -171,6 +184,25 @@ function DashboardNavbar({ absolute, light, isMini, image }) {
             }}
           >
             마이 페이지
+          </MDTypography>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            handleClose();
+            handleIgnoreF();
+            handleFriendOpen();
+          }}
+        >
+          <ListItemIcon>
+            <GroupIcon fontSize="small" />
+          </ListItemIcon>
+          <MDTypography
+            sx={{
+              fontFamily: "Pretendard-light",
+              fontSize: "0.9rem",
+            }}
+          >
+            친구
           </MDTypography>
         </MenuItem>
         <MenuItem
