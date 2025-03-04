@@ -53,6 +53,9 @@ function reducer(state, action) {
     case "OPEN_CONFIGURATOR": {
       return { ...state, openConfigurator: action.value };
     }
+    case "OPEN_FRIEND": {
+      return { ...state, openFriend: action.value };
+    }
     case "DIRECTION": {
       return { ...state, direction: action.value };
     }
@@ -64,6 +67,9 @@ function reducer(state, action) {
     }
     case "IGNORE": {
       return { ...state, ignore: action.value };
+    }
+    case "IGNORE_F": {
+      return { ...state, ignoreF: action.value };
     }
     default: {
       throw new Error(`Unhandled action type: ${action.type}`);
@@ -81,10 +87,12 @@ function MaterialUIControllerProvider({ children }) {
     transparentNavbar: true,
     fixedNavbar: true,
     openConfigurator: false,
+    openFriend: false,
     direction: "ltr",
     layout: "dashboard",
     darkMode: false,
     ignore: false,
+    ignoreF: false,
   };
 
   const [controller, dispatch] = useReducer(reducer, initialState);
@@ -120,10 +128,12 @@ const setSidenavColor = (dispatch, value) => dispatch({ type: "SIDENAV_COLOR", v
 const setTransparentNavbar = (dispatch, value) => dispatch({ type: "TRANSPARENT_NAVBAR", value });
 const setFixedNavbar = (dispatch, value) => dispatch({ type: "FIXED_NAVBAR", value });
 const setOpenConfigurator = (dispatch, value) => dispatch({ type: "OPEN_CONFIGURATOR", value });
+const setOpenFriend = (dispatch, value) => dispatch({ type: "OPEN_FRIEND", value });
 const setDirection = (dispatch, value) => dispatch({ type: "DIRECTION", value });
 const setLayout = (dispatch, value) => dispatch({ type: "LAYOUT", value });
 const setDarkMode = (dispatch, value) => dispatch({ type: "DARKMODE", value });
 const setIgnore = (dispatch, value) => dispatch({ type: "IGNORE", value });
+const setIgnoreF = (dispatch, value) => dispatch({ type: "IGNORE_F", value });
 
 export {
   MaterialUIControllerProvider,
@@ -135,8 +145,10 @@ export {
   setTransparentNavbar,
   setFixedNavbar,
   setOpenConfigurator,
+  setOpenFriend,
   setDirection,
   setLayout,
   setDarkMode,
   setIgnore,
+  setIgnoreF,
 };
