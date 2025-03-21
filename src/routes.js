@@ -36,8 +36,8 @@ Coded by www.creative-tim.com
 */
 
 // Material Dashboard 2 React layouts
-import Dashboard from "layouts/dashboard";
-import Billing from "layouts/billing";
+import Goal from "layouts/goal";
+import Schedule from "layouts/schedule";
 import Community from "layouts/community";
 import BoardMemo from "layouts/community/detail";
 import BoardMemoRegister from "layouts/community/register";
@@ -57,11 +57,19 @@ import Icon from "@mui/material/Icon";
 const routes = [
   {
     type: "collapse",
-    name: "Dashboard",
-    key: "dashboard",
-    icon: <Icon fontSize="small">dashboard</Icon>,
-    route: "/dashboard",
-    component: Dashboard,
+    name: "목표관리",
+    key: "goal",
+    icon: <Icon fontSize="small">checklist_rtl_icon</Icon>,
+    route: "/goal",
+    component: Goal,
+  },
+  {
+    type: "collapse",
+    name: "일정관리",
+    key: "schedule",
+    icon: <Icon fontSize="small">edit_calendar</Icon>,
+    route: "/schedule",
+    component: Schedule,
   },
   {
     type: "collapse",
@@ -86,14 +94,6 @@ const routes = [
     icon: <Icon fontSize="small">forum</Icon>,
     route: "/community/register",
     component: BoardMemoRegister,
-  },
-  {
-    type: "collapse",
-    name: "Billing",
-    key: "billing",
-    icon: <Icon fontSize="small">receipt_long</Icon>,
-    route: "/billing",
-    component: Billing,
   },
   {
     type: "collapse",

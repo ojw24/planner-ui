@@ -1,0 +1,90 @@
+.weekend-day {
+    color: red;
+}
+
+.fc-daygrid-event-harness {
+    color: #344767 !important;
+}
+
+.saturday {
+    color: blue;
+}
+
+.custom-day-cell {
+    font-family: Pretendard-Light;
+    font-size: 1rem;
+    background: white;
+    padding-left: 0.25rem !important;
+}
+
+.fc-daygrid-day-top {
+    display: flex !important;
+    flex-direction: row !important;
+}
+
+.fc-scrollgrid-sync-inner {
+    font-family: Pretendard-Regular;
+}
+
+.fc-toolbar-title {
+    font-family: Pretendard-Bold;
+}
+
+.fc-col-header-cell {
+    background: linear-gradient(195deg, #42424a, #191919);
+    color: white;
+}
+
+.fc-button {
+    background: none !important;
+    border: none !important;
+    color: black !important;
+}
+
+.fc-button:focus {
+    box-shadow: none !important;
+}
+
+.fc-toolbar-title {
+    display: flex !important;
+    flex-direction: column !important; /* 세로로 나열되도록 설정 */
+    align-items: center; /* 가운데 정렬 */
+}
+
+.fc-toolbar-title span {
+    font-size: 1.2em;
+}
+
+/* 월 이동 버튼의 스타일 */
+.fc-prev-button,
+.fc-next-button {
+    font-size: 1.2em;
+    padding: 0 10px;
+    cursor: pointer;
+}
+
+.fc-dayGridMonth-view {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    overflow: hidden;
+}
+
+.fc-scroller::-webkit-scrollbar {
+    display: none; /* 스크롤바 숨기기 */
+}
+
+.fc-daygrid-body {
+    width: 100% !important;
+}
+
+.fc-scrollgrid-sync-table {
+    width: 100% !important;
+}
+
+.fc-col-header {
+    width: 100% !important;
+}
+
+.fc-day-today {
+    background-color: #d0ebff !important;
+}

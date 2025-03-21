@@ -12,7 +12,6 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
-import Dashboard from "../../dashboard";
 import MDSnackbar from "../../../components/MDSnackbar";
 
 // Authentication layout components
@@ -102,8 +101,7 @@ function Basic() {
     <>
       {isLogin ? (
         <Routes>
-          <Route exact path="/dashboard" element=<Dashboard /> key="sign-in" />
-          <Route path="*" element={<Navigate to="/dashboard" />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       ) : (
         <BasicLayout image={bgImage}>
