@@ -618,7 +618,6 @@ function Friend() {
   const [draggingFrom, setDraggingFrom] = useState(null);
 
   const handleDragStart = (start) => {
-    console.log(draggingFrom);
     document.body.style.cursor = "not-allowed";
     setIsDragging(true);
     setDraggingFrom(start.source.droppableId);
@@ -852,7 +851,7 @@ function Friend() {
                                     </p>
                                   )}
                                   <Confirm
-                                    title={g.name + "을(를) 삭제하시겠습니가?"}
+                                    title={g.name + "을(를) 삭제하시겠습니까?"}
                                     open={grpCOpen[g.friendGrpId]}
                                     onClose={() => handleCloseGrpC(g.friendGrpId)}
                                     agreeFunc={(e) => handleClickDeleteGrp(e, g.friendGrpId)}
@@ -883,7 +882,7 @@ function Friend() {
                                                 ")"}
                                             </p>
                                             <Confirm
-                                              title={f.friendUserName + "을(를) 삭제하시겠습니가?"}
+                                              title={f.friendUserName + "을(를) 삭제하시겠습니까?"}
                                               open={friendCOpen[f.friendId]}
                                               onClose={() => handleCloseFriendC(f.friendId)}
                                               agreeFunc={(e) => handleClickDeleteFriend(e, f)}
@@ -969,7 +968,7 @@ function Friend() {
                                       ")"}
                                   </p>
                                   <Confirm
-                                    title={f.friendUserName + "을(를) 삭제하시겠습니가?"}
+                                    title={f.friendUserName + "을(를) 삭제하시겠습니까?"}
                                     open={friendCOpen[f.friendId]}
                                     onClose={() => handleCloseFriendC(f.friendId)}
                                     agreeFunc={(e) => handleClickDeleteFriend(e, f)}
@@ -1166,7 +1165,14 @@ function Friend() {
                             </MDButton>
                           </MDBox>
                         ) : (
-                          <span style={{ color: "rgba(0, 0, 0, 0.5)" }}>승인 대기중</span>
+                          <span
+                            style={{
+                              color: "rgba(0, 0, 0, 0.5)",
+                              fontSize: "0.85rem",
+                            }}
+                          >
+                            승인 대기중
+                          </span>
                         )}
                       </p>
                     ))}
