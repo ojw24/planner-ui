@@ -12,6 +12,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import "dayjs/locale/ko";
 import { DesktopTimePicker } from "@mui/x-date-pickers";
+import SendIcon from "@mui/icons-material/Send";
 
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -29,6 +30,7 @@ import MDSnackbar from "components/MDSnackbar";
 import Confirm from "components/Confirm";
 
 import * as func from "./function";
+import * as freindFunc from "examples/Friend/function";
 import * as Yup from "yup";
 
 dayjs.locale("ko");
@@ -43,6 +45,8 @@ function Schedule() {
   const [yearRange, setYearRange] = useState(year - 2);
   const [contextMenu, setContextMenu] = useState(null);
   const [scheduleReg, setScheduleReg] = useState(false);
+  const [scheduleShare, setScheduleShare] = useState(false);
+  const [scheduleShareReq, setScheduleShareReq] = useState(false);
   const [name, setName] = useState("일정");
   const [create, setCreate] = useState(true);
   const [disabled, setDisabled] = useState(false);
@@ -57,7 +61,71 @@ function Schedule() {
     content: "",
   });
   const [open, setOpen] = useState(false);
+  const [sOpen, setSOpen] = useState(false);
+  const [friends, setFriends] = useState([]);
+  const [selectedFriends, setSelectedFriends] = useState([]);
+  const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
+  const [shareReqs, setShareReqs] = useState([]);
   const calendarRef = useRef(null);
+
+  const [query, setQuery] = useState("");
+
+  // friendUserName 기준으로 필터링
+  const filteredFriends = friends.filter((friend) => friend.friendUserName.includes(query));
+
+  const containerRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  useEffect(() => {
+    func.findScheduleShareRequests().then((res) => {
+      setShareReqs(res.data);
+    });
+  }, []);
+
+  // 바깥 클릭 감지 → 선택 해제
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      //if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target) // 공유 버튼 클릭 예외 처리
+      ) {
+        setSelectedFriends([]); // 선택 해제
+        setLastSelectedIndex(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectFriend = (event, friend, index) => {
+    if (event.shiftKey && lastSelectedIndex !== null) {
+      // Shift + 클릭: 범위 선택
+      const start = Math.min(lastSelectedIndex, index);
+      const end = Math.max(lastSelectedIndex, index);
+      const rangeSelection = filteredFriends.slice(start, end + 1); // 전체 객체 저장
+
+      setSelectedFriends((prev) => {
+        const newSelection = [
+          ...new Map([...prev, ...rangeSelection].map((f) => [f.friendUserId, f])).values(),
+        ];
+        return newSelection;
+      });
+    } else if (event.ctrlKey || event.metaKey) {
+      // Ctrl + 클릭 (Mac에선 metaKey)
+      setSelectedFriends((prev) =>
+        prev.some((f) => f.friendUserId === friend.friendUserId)
+          ? prev.filter((f) => f.friendUserId !== friend.friendUserId)
+          : [...prev, friend]
+      );
+    } else {
+      // 일반 클릭: 단일 선택
+      setSelectedFriends([friend]);
+    }
+    setLastSelectedIndex(index);
+  };
 
   const handleClickCOpen = () => {
     setOpen(true);
@@ -65,6 +133,14 @@ function Schedule() {
 
   const handleCClose = () => {
     setOpen(false);
+  };
+
+  const handleClickSCOpen = () => {
+    setSOpen(true);
+  };
+
+  const handleSCClose = () => {
+    setSOpen(false);
   };
 
   const prevMonth = () => {
@@ -99,8 +175,15 @@ function Schedule() {
   };
 
   const handleModalClose = () => {
+    setScheduleShareReq(false);
+    setScheduleShare(false);
     setScheduleReg(false);
-    setSchedule({});
+    setTimeout(() => {
+      setSelectedFriends([]);
+      setLastSelectedIndex(null);
+      setSchedule({});
+      formik.resetForm();
+    }, 300);
     formik.resetForm();
   };
 
@@ -137,41 +220,35 @@ function Schedule() {
     changeToSpecificDate();
     const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
     func.findSchedules(searchDate).then((res) => {
-      if (res.data && res.data.length > 0) {
-        const newEvents = [];
-        res.data.forEach((item) => {
-          newEvents.push({
-            id: String(item.scheduleId),
-            title: item.name,
-            start: item.startDtm,
-            end: item.endDtm,
-            extendedProps: {
-              location: item.location, // 여기로 이동
-            },
-          });
-        });
-        setEvents(newEvents);
-      }
+      dataToEvents(res.data);
     });
   }, [year, month]);
 
+  const dataToEvents = (data) => {
+    if (data && data.length > 0) {
+      const newEvents = [];
+      data.forEach((item) => {
+        newEvents.push({
+          id: String(item.scheduleId),
+          title: item.name,
+          start: item.startDtm,
+          end: item.endDtm,
+          extendedProps: {
+            userId: item.userId,
+            userName: item.userName,
+            location: item.location,
+            shared: item.shared,
+          },
+        });
+      });
+
+      setEvents(newEvents);
+    }
+  };
+
   useEffect(() => {
     func.findSchedules(today.toISOString().split("T")[0]).then((res) => {
-      if (res.data && res.data.length > 0) {
-        const newEvents = [];
-        res.data.forEach((item) => {
-          newEvents.push({
-            id: String(item.scheduleId),
-            title: item.name,
-            start: item.startDtm,
-            end: item.endDtm,
-            extendedProps: {
-              location: item.location, // 여기로 이동
-            },
-          });
-        });
-        setEvents(newEvents);
-      }
+      dataToEvents(res.data);
     });
   }, []);
 
@@ -288,6 +365,9 @@ function Schedule() {
           ? info.event.endStr.split("T")[1].slice(0, 5)
           : info.event.startStr.split("T")[1].slice(0, 5),
         location: info.event.extendedProps.location,
+        shared: info.event.extendedProps.shared,
+        userId: info.event.extendedProps.userId,
+        userName: info.event.extendedProps.userName,
       });
       handleContextMenu(e, "edit");
     });
@@ -300,6 +380,7 @@ function Schedule() {
         fontFamily: "Pretendard-Light",
         width: "20rem",
       },
+      readOnly: schedule.shared,
     },
     InputLabelProps: {
       style: {
@@ -340,8 +421,12 @@ function Schedule() {
     day: {
       sx: {
         fontFamily: "Pretendard-Light",
-        "&[aria-current='date']": {
-          backgroundColor: "transparent !important",
+        "&[aria-current='date']:focus": {
+          backgroundColor: "white !important",
+        },
+        "&.Mui-selected:focus, &[aria-current='date'].Mui-selected:focus": {
+          backgroundColor: "#1976d2 !important",
+          color: "#fff !important",
         },
       },
     },
@@ -395,6 +480,10 @@ function Schedule() {
           backgroundColor: "#1976d2 !important", // 선택된 날짜 배경색
           color: "#fff", // 글자색
         },
+        "& .Mui-selected:hover, & .Mui-selected.MuiPickersDay-root:hover": {
+          backgroundColor: "#1976d2 !important", // 선택된 날짜 배경색
+          color: "#fff !important", // 글자색
+        },
         "& .MuiPickersDay-root:hover": {
           backgroundColor: "inherit !important",
           color: "inherit !important",
@@ -417,6 +506,19 @@ function Schedule() {
       width: "4rem",
       minHeight: "1rem",
       height: "2rem",
+      padding: 0,
+    },
+  };
+
+  const sBtnStyles = {
+    sx: {
+      fontFamily: "'Pretendard-Bold', sans-serif",
+      fontSize: "0.8rem",
+      lineHeight: 1,
+      width: "3rem",
+      minWidth: "3rem",
+      minHeight: "1rem",
+      height: "1.5rem",
       padding: 0,
     },
   };
@@ -587,19 +689,7 @@ function Schedule() {
         const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
         func.findSchedules(searchDate).then((res) => {
           if (res.data && res.data.length > 0) {
-            const newEvents = [];
-            res.data.forEach((item) => {
-              newEvents.push({
-                id: String(item.scheduleId),
-                title: item.name,
-                start: item.startDtm,
-                end: item.endDtm,
-                extendedProps: {
-                  location: item.location,
-                },
-              });
-            });
-            setEvents(newEvents);
+            dataToEvents(res.data);
             setCalendarRender((prev) => !prev);
           }
         });
@@ -632,19 +722,7 @@ function Schedule() {
           const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
           func.findSchedules(searchDate).then((res) => {
             if (res.data && res.data.length > 0) {
-              const newEvents = [];
-              res.data.forEach((item) => {
-                newEvents.push({
-                  id: String(item.scheduleId),
-                  title: item.name,
-                  start: item.startDtm,
-                  end: item.endDtm,
-                  extendedProps: {
-                    location: item.location,
-                  },
-                });
-              });
-              setEvents(newEvents);
+              dataToEvents(res.data);
               setCalendarRender((prev) => !prev);
             }
           });
@@ -674,21 +752,118 @@ function Schedule() {
         const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
         func.findSchedules(searchDate).then((res) => {
           if (res.data && res.data.length > 0) {
-            const newEvents = [];
-            res.data.forEach((item) => {
-              newEvents.push({
-                id: String(item.scheduleId),
-                title: item.name,
-                start: item.startDtm,
-                end: item.endDtm,
-                extendedProps: {
-                  location: item.location,
-                },
-              });
-            });
-            setEvents(newEvents);
+            dataToEvents(res.data);
             setCalendarRender((prev) => !prev);
           }
+        });
+      });
+  };
+
+  const handleClickSDelete = (e) => {
+    e.preventDefault();
+
+    func
+      .deleteScheduleShare(schedule.scheduleId)
+      .catch((rej) => {
+        setPopUpProps({
+          ...popupProps,
+          open: true,
+          icon: "warning",
+          color: "warning",
+          title: "일정관리",
+          content: "존재하지 않는 일정입니다.",
+        });
+      })
+      .finally(() => {
+        setDisabled(false);
+        handleSCClose();
+        handleModalClose();
+        const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
+        func.findSchedules(searchDate).then((res) => {
+          if (res.data && res.data.length > 0) {
+            dataToEvents(res.data);
+            setCalendarRender((prev) => !prev);
+          }
+        });
+      });
+  };
+
+  const handleClickShare = () => {
+    freindFunc.findFriendGroups().then((res) => {
+      setFriends(res.data.filter((item) => item.friends !== null).flatMap((item) => item.friends));
+      freindFunc.findFriends().then((res2) => {
+        setFriends((prev) => [...prev, ...res2.data]);
+      });
+    });
+  };
+
+  const shareRequest = () => {
+    if (!selectedFriends || selectedFriends.length === 0) {
+      setPopUpProps({
+        ...popupProps,
+        open: true,
+        icon: "warning",
+        color: "warning",
+        title: "일정관리",
+        content: "공유 대상을 선택해주세요.",
+      });
+    } else {
+      setDisabled(true);
+      const props = {
+        targetIds: selectedFriends.map((friend) => friend.friendUserId),
+      };
+      func
+        .createScheduleShareRequest(schedule.scheduleId, props)
+        .catch((rej) => {
+          setPopUpProps({
+            ...popupProps,
+            open: true,
+            icon: "warning",
+            color: "warning",
+            title: "일정관리",
+            content: "존재하지 않는 일정입니다.",
+          });
+        })
+        .finally(() => {
+          setDisabled(false);
+          handleModalClose();
+          const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
+          func.findSchedules(searchDate).then((res) => {
+            if (res.data && res.data.length > 0) {
+              dataToEvents(res.data);
+              setCalendarRender((prev) => !prev);
+            }
+          });
+        });
+    }
+  };
+
+  const approveShareReq = (scheduleId, reqId, approve) => {
+    setDisabled(true);
+    func
+      .approveScheduleShareRequest(scheduleId, reqId, approve)
+      .catch((rej) => {
+        setPopUpProps({
+          ...popupProps,
+          open: true,
+          icon: "warning",
+          color: "warning",
+          title: "일정관리",
+          content: "존재하지 않는 일정입니다.",
+        });
+      })
+      .finally(() => {
+        setDisabled(false);
+        handleModalClose();
+        const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
+        func.findSchedules(searchDate).then((res) => {
+          if (res.data && res.data.length > 0) {
+            dataToEvents(res.data);
+            setCalendarRender((prev) => !prev);
+          }
+        });
+        func.findScheduleShareRequests().then((res) => {
+          setShareReqs(res.data);
         });
       });
   };
@@ -721,29 +896,85 @@ function Schedule() {
           </MDTypography>
           <MDBox
             sx={{
+              position: "relative", // 상대 위치 설정
               display: "flex",
               alignItems: "center",
+              justifyContent: "center", // 기본적으로 가운데 정렬
               height: "2.75rem",
+              width: "100%",
             }}
           >
-            <MDButton {...btnStyle} onClick={prevMonth}>
-              &lt;
-            </MDButton>
-            <MDTypography
+            <MDBox
               sx={{
-                fontFamily: "Pretendard-Bold",
-                fontSize: "2.25rem",
+                position: "absolute",
+                left: 0, // 왼쪽에 배치
                 cursor: "pointer",
+                height: "1rem",
               }}
-              onClick={handleClick}
+              onClick={() => setScheduleShareReq(true)}
             >
-              {"\u00A0"}
-              {month + 1}
-              {"\u00A0"}
-            </MDTypography>
-            <MDButton {...btnStyle} onClick={nextMonth}>
-              &gt;
-            </MDButton>
+              <SendIcon
+                sx={{
+                  fontSize: "1rem",
+                }}
+              />
+              {shareReqs.length > 0 && (
+                <MDBox
+                  sx={{
+                    position: "absolute",
+                    top: "-5px",
+                    right:
+                      shareReqs.length >= 10
+                        ? shareReqs.length >= 100
+                          ? shareReqs.length > 999
+                            ? "-2.25rem"
+                            : "-1.85rem"
+                          : "-1.45rem"
+                        : "-1.05rem",
+                    backgroundColor: "#FF3D00",
+                    color: "white !important",
+                    fontSize: "0.7rem",
+                    fontWeight: "bold",
+                    borderRadius: "0.4rem",
+                    width: "auto",
+                    height: "1.25rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingX: "0.3rem",
+                  }}
+                >
+                  {shareReqs.length > 0 ? (shareReqs.length > 999 ? "999+" : shareReqs.length) : ""}
+                </MDBox>
+              )}
+            </MDBox>
+            {/* 가운데 정렬 */}
+            <MDBox
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <MDButton {...btnStyle} onClick={prevMonth}>
+                &lt;
+              </MDButton>
+              <MDTypography
+                sx={{
+                  fontFamily: "Pretendard-Bold",
+                  fontSize: "2.25rem",
+                  cursor: "pointer",
+                }}
+                onClick={handleClick}
+              >
+                {"\u00A0"}
+                {month + 1}
+                {"\u00A0"}
+              </MDTypography>
+              <MDButton {...btnStyle} onClick={nextMonth}>
+                &gt;
+              </MDButton>
+            </MDBox>
           </MDBox>
         </MDBox>
         <FullCalendar
@@ -774,6 +1005,9 @@ function Schedule() {
             } else {
               return classNames;
             }
+          }}
+          eventClassNames={(eventInfo) => {
+            return eventInfo.event.extendedProps.shared ? "shared-event" : "";
           }}
           headerToolbar={null}
         />
@@ -967,6 +1201,21 @@ function Schedule() {
                     >
                       상세 보기
                     </MenuItem>,
+                    !schedule.shared ? (
+                      <MenuItem
+                        {...itemStyle}
+                        key="share"
+                        onClick={() => {
+                          handleClickShare();
+                          handleRightMenuClose();
+                          setScheduleShare(true);
+                        }}
+                      >
+                        공유하기
+                      </MenuItem>
+                    ) : (
+                      <></>
+                    ),
                   ];
                 default:
                   return [
@@ -990,7 +1239,7 @@ function Schedule() {
                 {...inputCore(formik, "name", setSchedule)}
                 {...inputStyles}
                 type="text"
-                label={name + "명 *"}
+                label={name + "명" + (schedule.shared ? "" : " *")}
                 name="name"
                 id="name"
                 key="name"
@@ -1006,7 +1255,7 @@ function Schedule() {
                 color: "inherit",
               }}
             >
-              기간 *
+              기간 {schedule.shared ? "" : "*"}
             </MDTypography>
             <MDBox
               mb={3}
@@ -1018,6 +1267,8 @@ function Schedule() {
               <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
                 <DatePicker
                   {...dateCore(formik, "startDate", setSchedule)}
+                  disableOpenPicker={schedule.shared}
+                  readOnly={schedule.shared}
                   views={["year", "month", "day"]}
                   format="YYYY-MM-DD"
                   value={schedule.startDate ? dayjs(schedule.startDate) : null}
@@ -1029,6 +1280,8 @@ function Schedule() {
                 />
                 <MDBox mx={1.5}>-</MDBox>
                 <DatePicker
+                  disableOpenPicker={schedule.shared}
+                  readOnly={schedule.shared}
                   views={["year", "month", "day"]}
                   format="YYYY-MM-DD"
                   value={schedule.endDate ? dayjs(schedule.endDate) : null}
@@ -1051,7 +1304,7 @@ function Schedule() {
                 color: "inherit",
               }}
             >
-              시간 *
+              시간 {schedule.shared ? "" : "*"}
             </MDTypography>
             <MDBox
               mb={3}
@@ -1064,6 +1317,7 @@ function Schedule() {
                 <DesktopTimePicker
                   {...timeCore(formik, "startTime", setSchedule)}
                   {...timePickerProps}
+                  readOnly={schedule.shared}
                   value={
                     schedule.startTime
                       ? dayjs()
@@ -1077,6 +1331,7 @@ function Schedule() {
                 <DesktopTimePicker
                   {...timeCore(formik, "endTime", setSchedule)}
                   {...timePickerProps}
+                  readOnly={schedule.shared}
                   value={
                     schedule.endTime
                       ? dayjs()
@@ -1102,11 +1357,146 @@ function Schedule() {
                 }}
               />
             </MDBox>
+            {schedule.shared ? (
+              <MDBox
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <MDTypography
+                  sx={{
+                    display: "inline-block",
+                    fontFamily: "Pretendard-Light",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {"공유자 : " +
+                    schedule.userName +
+                    "(" +
+                    schedule.userId.slice(0, -3) +
+                    "***" +
+                    ")"}
+                </MDTypography>
+                <MDButton
+                  {...btnStyles}
+                  type="button"
+                  variant="gradient"
+                  color="info"
+                  disabled={disabled}
+                  onClick={handleClickSCOpen}
+                >
+                  {disabled ? (
+                    <MDBox component="img" src={loading} alt="loading" width="1rem" />
+                  ) : (
+                    "삭제"
+                  )}
+                </MDButton>
+              </MDBox>
+            ) : (
+              <MDBox
+                display="flex"
+                gap="0.5rem"
+                sx={{
+                  justifyContent: "center",
+                }}
+              >
+                <MDButton
+                  {...btnStyles}
+                  type="button"
+                  variant="gradient"
+                  color="info"
+                  disabled={disabled}
+                  onClick={handleSubmit}
+                >
+                  {disabled ? (
+                    <MDBox component="img" src={loading} alt="loading" width="1rem" />
+                  ) : create ? (
+                    "등록"
+                  ) : (
+                    "수정"
+                  )}
+                </MDButton>
+                {!create ? (
+                  <MDButton
+                    {...btnStyles}
+                    type="button"
+                    variant="gradient"
+                    color="info"
+                    disabled={disabled}
+                    onClick={handleClickCOpen}
+                  >
+                    {disabled ? (
+                      <MDBox component="img" src={loading} alt="loading" width="1rem" />
+                    ) : (
+                      "삭제"
+                    )}
+                  </MDButton>
+                ) : (
+                  <></>
+                )}
+              </MDBox>
+            )}
+          </>
+        }
+        onClose={handleModalClose}
+      />
+      <Modal
+        open={scheduleShare}
+        content={
+          <MDBox
+            sx={{
+              height: "21.3rem",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <MDInput
+              {...inputStyles}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="이름을 입력해주세요"
+            />
             <MDBox
-              display="flex"
-              gap="0.5rem"
+              ref={containerRef}
+              mt={1}
               sx={{
-                justifyContent: "center",
+                overflowY: "auto",
+                fontFamily: "Pretendard-Light",
+                fontSize: "0.9rem",
+              }}
+            >
+              {filteredFriends.map((f, idx) => {
+                return (
+                  <MDBox
+                    key={"freindBox" + f.friendId}
+                    sx={{
+                      marginY: "0.1rem",
+                      cursor: "pointer",
+                      backgroundColor: selectedFriends.some(
+                        (selected) => selected.friendUserId === f.friendUserId
+                      )
+                        ? "#DCDCDC"
+                        : "transparent",
+                      userSelect: "none",
+                    }}
+                    onClick={(e) => handleSelectFriend(e, f, idx)}
+                  >
+                    <p key={"freindP" + f.friendId}>
+                      {f.friendUserName + "(" + f.friendUserId.slice(0, -3) + "***" + ")"}
+                    </p>
+                  </MDBox>
+                );
+              })}
+            </MDBox>
+            <MDBox
+              ref={buttonRef}
+              sx={{
+                display: "flex",
+                justifyContent: "center", // 수평 중앙 정렬
+                mt: "auto", // 하단 정렬
               }}
             >
               <MDButton
@@ -1115,36 +1505,111 @@ function Schedule() {
                 variant="gradient"
                 color="info"
                 disabled={disabled}
-                onClick={handleSubmit}
+                onClick={shareRequest}
               >
                 {disabled ? (
                   <MDBox component="img" src={loading} alt="loading" width="1rem" />
-                ) : create ? (
-                  "등록"
                 ) : (
-                  "수정"
+                  "공유"
                 )}
               </MDButton>
-              {!create ? (
-                <MDButton
-                  {...btnStyles}
-                  type="button"
-                  variant="gradient"
-                  color="info"
-                  disabled={disabled}
-                  onClick={handleClickCOpen}
-                >
-                  {disabled ? (
-                    <MDBox component="img" src={loading} alt="loading" width="1rem" />
-                  ) : (
-                    "삭제"
-                  )}
-                </MDButton>
+            </MDBox>
+          </MDBox>
+        }
+        onClose={handleModalClose}
+      />
+      <Modal
+        open={scheduleShareReq}
+        content={
+          <MDBox
+            sx={{
+              minWidth: "5rem",
+              maxHeight: "16rem",
+            }}
+          >
+            <MDTypography
+              sx={{
+                fontFamily: "Pretendard-Bold",
+                fontSize: "1rem",
+                position: "absolute",
+                top: "0.5rem",
+                width: "auto",
+              }}
+            >
+              공유 신청
+            </MDTypography>
+            <MDBox>
+              {shareReqs && shareReqs.length > 0 ? (
+                <>
+                  {shareReqs.map((s, idx) => (
+                    <p
+                      key={"friendRequest" + idx}
+                      style={{
+                        fontFamily: "Pretendard-Light",
+                        fontSize: "1rem",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: "0.1rem",
+                      }}
+                    >
+                      {s.requesterName + "(" + s.requesterId.slice(0, -3) + "***" + ")"}
+                      {"님이 '" + s.schedule.name + "' 일정을 공유하였습니다."}
+                      <span>{"\u00A0\u00A0"}</span>
+                      <MDBox display="flex" gap="0.25rem">
+                        <MDButton
+                          {...sBtnStyles}
+                          type="button"
+                          variant="gradient"
+                          color="info"
+                          disabled={disabled}
+                          onClick={() => approveShareReq(s.schedule.scheduleId, s.reqId, true)}
+                        >
+                          {disabled ? (
+                            <MDBox component="img" src={loading} alt="loading" width="1rem" />
+                          ) : (
+                            "승인"
+                          )}
+                        </MDButton>
+                        <MDButton
+                          {...sBtnStyles}
+                          type="button"
+                          variant="gradient"
+                          color="info"
+                          disabled={disabled}
+                          onClick={() => approveShareReq(s.schedule.scheduleId, s.reqId, false)}
+                        >
+                          {disabled ? (
+                            <MDBox component="img" src={loading} alt="loading" width="1rem" />
+                          ) : (
+                            "거절"
+                          )}
+                        </MDButton>
+                      </MDBox>
+                    </p>
+                  ))}
+                </>
               ) : (
-                <></>
+                <MDBox
+                  display="flex"
+                  flexDirection="column"
+                  alignItems="center"
+                  justifyContent="center"
+                  height="16rem"
+                  width="20rem"
+                >
+                  <MDTypography
+                    sx={{
+                      fontFamily: "Pretendard-Light",
+                      fontSize: "1rem",
+                    }}
+                  >
+                    공유 신청이 없습니다.
+                  </MDTypography>
+                </MDBox>
               )}
             </MDBox>
-          </>
+          </MDBox>
         }
         onClose={handleModalClose}
       />
@@ -1165,6 +1630,12 @@ function Schedule() {
         open={open}
         onClose={handleCClose}
         agreeFunc={handleClickDelete}
+      />
+      <Confirm
+        title="정말 삭제하시겠습니까?"
+        open={sOpen}
+        onClose={handleSCClose}
+        agreeFunc={handleClickSDelete}
       />
     </>
   );

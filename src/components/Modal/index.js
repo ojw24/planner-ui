@@ -13,7 +13,7 @@ import Icon from "@mui/material/Icon";
 
 const DraggablePaper = (props) => {
   return (
-    <Draggable handle=".MuiPaper-root" cancel={"input, textarea, select, button"}>
+    <Draggable handle=".MuiPaper-root" cancel={"input, textarea, select, button, p"}>
       <Paper {...props} />
     </Draggable>
   );
@@ -48,7 +48,7 @@ export default function Modal({ content, open, onClose }) {
           close
         </Icon>
       </DialogTitle>
-      <DialogContent>{content}</DialogContent>
+      <DialogContent sx={{ marginTop: 1 }}>{content}</DialogContent>
     </Dialog>
   );
 }
