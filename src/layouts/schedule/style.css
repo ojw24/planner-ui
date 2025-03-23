@@ -88,3 +88,20 @@
 .fc-day-today {
     background-color: #d0ebff !important;
 }
+
+.fc-daygrid-dot-event:hover {
+    background: none !important;
+}
+
+.fc-event {
+    cursor: default;
+}
+
+.shared-event .fc-daygrid-event-dot {
+    border: 4px solid #4CAF50 !important;
+}
+
+.fc-h-event.shared-event {
+    background: #4CAF50 !important;
+    border: 4px solid #4CAF50 !important;
+}
