@@ -105,3 +105,11 @@
     background: #4CAF50 !important;
     border: 4px solid #4CAF50 !important;
 }
+
+.fc-sticky {
+    opacity: 0.5;
+}
+
+.fc-event-start .fc-sticky {
+    opacity: 1 !important;
+}

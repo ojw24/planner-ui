@@ -5,12 +5,12 @@ import { useFormik } from "formik";
 import Card from "@mui/material/Card";
 import { FormControlLabel, Checkbox, TextField } from "@mui/material";
 
-import MDBox from "../../../components/MDBox";
-import MDInput from "../../../components/MDInput";
+import MDBox from "components/MDBox";
+import MDInput from "components/MDInput";
 import MDSnackbar from "components/MDSnackbar";
 import * as Yup from "yup";
-import loading from "../../../assets/images/loading.gif";
-import MDButton from "../../../components/MDButton";
+import loading from "assets/images/loading.gif";
+import MDButton from "components/MDButton";
 
 import { createNotice, updateNotice } from "../function";
 
@@ -193,8 +193,15 @@ function Register() {
     helperText: formik.touched[fieldName] && formik.errors[fieldName],
     value: formik.values[fieldName],
     onChange: (e) => {
-      setNotice((prev) => ({ ...prev, [fieldName]: e.target.value }));
-      formik.handleChange(e);
+      const value = e.target.value;
+      const encoder = new TextEncoder();
+      const byteLength = encoder.encode(value).length;
+      const max = fieldName === "title" ? 255 : 0;
+
+      if (fieldName !== "title" || byteLength <= max) {
+        setNotice((prev) => ({ ...prev, [fieldName]: e.target.value }));
+        formik.handleChange(e);
+      }
     },
   });
 

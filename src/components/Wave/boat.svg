@@ -1,0 +1,11 @@
+<svg viewBox="0 0 64 64" xml:space="preserve"
+     xmlns="http://www.w3.org/2000/svg">
+    <g opacity=".2" fill="#231F20" class="fill-231f20">
+		<path d="M43 51s-10.172 2-18.917 2-13.167-7.083-13.167-7.083h41.917S51.167 50 43 51z"></path>
+        <path d="M24.083 53.5c-8.919 0-13.403-7.02-13.59-7.319a.498.498 0 0 1 .424-.764h41.916a.5.5 0 0 1 .463.689c-.072.178-1.873 4.367-10.235 5.391-.067.014-10.286 2.003-18.978 2.003zm-12.181-7.083c1.422 1.787 5.533 6.083 12.181 6.083 8.596 0 18.72-1.971 18.82-1.991 5.716-.701 8.14-2.944 9.026-4.093H11.902z"></path>
+	</g>
+    <path d="M28.085 11.507a.496.496 0 0 0-.512.232.503.503 0 0 0 .026.561c6.731 8.975 3.678 21.564 1.9 26.919V18a.502.502 0 0 0-.433-.496.508.508 0 0 0-.549.361c-.057.204-5.784 20.434-14.689 23.664A.5.5 0 0 0 14 42.5h35a.5.5 0 0 0 .5-.5c0-26.496-21.201-30.456-21.415-30.493z" fill="#231F20" opacity=".2" class="fill-231f20"></path>
+    <path d="M43 49s-10.172 2-18.917 2-13.167-7.083-13.167-7.083h41.917S51.167 48 43 49z" fill="#e38f8f" stroke="#e38f8f" stroke-linejoin="round" stroke-miterlimit="10" class="fill-ffffff stroke-ffffff"></path>
+    <path d="M29 16s-5.75 20.644-15 24h15V16z" fill="#F5CF87" stroke="#F5CF87" stroke-linejoin="round" stroke-miterlimit="10" class="fill-f5cf87 stroke-f5cf87"></path>
+    <path d="M29 40s8-18-1-30c0 0 21 3.619 21 30H29z" fill="#C75C5C" stroke="#C75C5C" stroke-linejoin="round" stroke-miterlimit="10" class="fill-c75c5c stroke-c75c5c"></path>
+</svg>

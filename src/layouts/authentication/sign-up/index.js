@@ -203,9 +203,33 @@ function Cover() {
     helperText: formik.touched[fieldName] && formik.errors[fieldName],
     value: formik.values[fieldName],
     onChange: (e) => {
-      e.target.value = e.target.value.trim();
-      setSignUp((prev) => ({ ...prev, [fieldName]: e.target.value }));
-      formik.handleChange(e);
+      const value = e.target.value.trim();
+      const encoder = new TextEncoder();
+      const byteLength = encoder.encode(value).length;
+      let max;
+
+      switch (fieldName) {
+        case "id":
+          max = 255;
+          break;
+        case "password":
+          max = 255;
+          break;
+        case "name":
+          max = 50;
+          break;
+        case "email":
+          max = 255;
+          break;
+        default:
+          max = 255;
+      }
+
+      if (byteLength <= max) {
+        e.target.value = e.target.value.trim();
+        setSignUp((prev) => ({ ...prev, [fieldName]: e.target.value }));
+        formik.handleChange(e);
+      }
     },
   });
 
