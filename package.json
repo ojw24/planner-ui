@@ -23,6 +23,7 @@
     "@fullcalendar/react": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
     "@mui/icons-material": "5.11.16",
+    "@mui/joy": "^5.0.0-beta.52",
     "@mui/material": "5.12.3",
     "@mui/x-date-pickers": "^7.28.0",
     "axios": "^1.7.9",

@@ -811,14 +811,20 @@ function Friend() {
                                       <TextField
                                         {...editInputStyles(g)}
                                         fullWidth
-                                        onChange={(e) =>
-                                          setTempTexts((prev) => ({
-                                            ...prev,
-                                            [g.friendGrpId]: e.target.value,
-                                          }))
-                                        }
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const encoder = new TextEncoder();
+                                          const byteLength = encoder.encode(value).length;
+
+                                          if (byteLength <= 50) {
+                                            setTempTexts((prev) => ({
+                                              ...prev,
+                                              [g.friendGrpId]: e.target.value,
+                                            }));
+                                          }
+                                        }}
                                         value={tempTexts[g.friendGrpId]}
-                                        placeholder="내용을 입력하세요"
+                                        placeholder="그룹명을 입력하세요"
                                         onKeyDown={(e) => handleEnterUpdate(e, g)}
                                       />
                                     </MDBox>
@@ -993,7 +999,13 @@ function Friend() {
                       {...inputStyles()}
                       fullWidth
                       onChange={(e) => {
-                        setGrpName(e.target.value);
+                        const value = e.target.value;
+                        const encoder = new TextEncoder();
+                        const byteLength = encoder.encode(value).length;
+
+                        if (byteLength <= 50) {
+                          setGrpName(e.target.value);
+                        }
                       }}
                       value={grpName}
                       placeholder="그룹명을 입력하세요"
@@ -1244,9 +1256,6 @@ function Friend() {
                         ];
                       case "friend":
                         return [
-                          <MenuItem {...itemStyle} key="friend-block" onClick={handleClose}>
-                            친구 홈
-                          </MenuItem>,
                           <MenuItem
                             {...itemStyle}
                             key="friend-delete"

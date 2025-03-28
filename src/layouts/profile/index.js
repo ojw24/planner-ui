@@ -86,9 +86,16 @@ function Overview() {
     helperText: formik.touched[fieldName] && formik.errors[fieldName],
     value: formik.values[fieldName],
     onChange: (e) => {
-      e.target.value = e.target.value.trim();
-      setUser((prev) => ({ ...prev, [fieldName]: e.target.value }));
-      formik.handleChange(e);
+      const value = e.target.value.trim();
+      const encoder = new TextEncoder();
+      const byteLength = encoder.encode(value).length;
+      const max = fieldName === "name" ? 50 : 255;
+
+      if (byteLength <= max) {
+        e.target.value = e.target.value.trim();
+        setUser((prev) => ({ ...prev, [fieldName]: e.target.value }));
+        formik.handleChange(e);
+      }
     },
   });
 

@@ -194,8 +194,15 @@ function Register() {
     helperText: formik.touched[fieldName] && formik.errors[fieldName],
     value: formik.values[fieldName],
     onChange: (e) => {
-      setBoardMemo((prev) => ({ ...prev, [fieldName]: e.target.value }));
-      formik.handleChange(e);
+      const value = e.target.value;
+      const encoder = new TextEncoder();
+      const byteLength = encoder.encode(value).length;
+      const max = fieldName === "title" ? 255 : 0;
+
+      if (fieldName !== "title" || byteLength <= max) {
+        setBoardMemo((prev) => ({ ...prev, [fieldName]: e.target.value }));
+        formik.handleChange(e);
+      }
     },
   });
 

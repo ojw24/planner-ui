@@ -2,7 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import { useFormik } from "formik";
 
-import { Menu, MenuItem, Grid, IconButton } from "@mui/material";
+import {
+  Menu,
+  MenuItem,
+  Grid,
+  IconButton,
+  Tooltip,
+  FormControlLabel,
+  Checkbox,
+} from "@mui/material";
 import ClickAwayListener from "@mui/base/ClickAwayListener";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -13,6 +21,8 @@ import dayjs from "dayjs";
 import "dayjs/locale/ko";
 import { DesktopTimePicker } from "@mui/x-date-pickers";
 import SendIcon from "@mui/icons-material/Send";
+import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
+import TaskAltIcon from "@mui/icons-material/TaskAlt";
 
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -31,6 +41,7 @@ import Confirm from "components/Confirm";
 
 import * as func from "./function";
 import * as freindFunc from "examples/Friend/function";
+import * as goalFunc from "layouts/goal/function";
 import * as Yup from "yup";
 
 dayjs.locale("ko");
@@ -40,6 +51,7 @@ function Schedule() {
   const [calendarRender, setCalendarRender] = useState(false);
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
+  const [day, setDay] = useState(dayjs(today).format("YYYY-MM-DD"));
   const [anchorEl, setAnchorEl] = useState(null);
   const [anchorElYear, setAnchorElYear] = useState(null);
   const [yearRange, setYearRange] = useState(year - 2);
@@ -47,7 +59,7 @@ function Schedule() {
   const [scheduleReg, setScheduleReg] = useState(false);
   const [scheduleShare, setScheduleShare] = useState(false);
   const [scheduleShareReq, setScheduleShareReq] = useState(false);
-  const [name, setName] = useState("일정");
+  const [isGoal, setIsGoal] = useState(false);
   const [create, setCreate] = useState(true);
   const [disabled, setDisabled] = useState(false);
   const [schedule, setSchedule] = useState({
@@ -70,11 +82,22 @@ function Schedule() {
 
   const [query, setQuery] = useState("");
 
+  const [edit, setEdit] = useState(false);
+  const [yearGoal, setYearGoal] = useState(null);
+  const [monthGoal, setMonthGoal] = useState({});
+  const [searchParams, setSearchParams] = useState({
+    goalType: "goal_type_002",
+    searchDate: new Date().toISOString().split("T")[0],
+    detail: true,
+  });
+
   // friendUserName 기준으로 필터링
   const filteredFriends = friends.filter((friend) => friend.friendUserName.includes(query));
 
   const containerRef = useRef(null);
   const buttonRef = useRef(null);
+
+  const [checkedEvents, setCheckedEvents] = useState({});
 
   useEffect(() => {
     func.findScheduleShareRequests().then((res) => {
@@ -82,10 +105,32 @@ function Schedule() {
     });
   }, []);
 
+  useEffect(() => {
+    const searchParams = {
+      goalType: "goal_type_001",
+      searchDate: new Date().toISOString().split("T")[0],
+      detail: false,
+    };
+    goalFunc.findGoalBy(searchParams).then((res) => {
+      setYearGoal(res.data);
+    });
+  }, []);
+
+  useEffect(() => {
+    const searchParams = {
+      goalType: "goal_type_002",
+      searchDate: new Date().toISOString().split("T")[0],
+      detail: true,
+    };
+    goalFunc.findGoalBy(searchParams).then((res) => {
+      setMonthGoal(res.data);
+      goalToEvents(res.data?.children);
+    });
+  }, []);
+
   // 바깥 클릭 감지 → 선택 해제
   useEffect(() => {
     const handleClickOutside = (event) => {
-      //if (containerRef.current && !containerRef.current.contains(event.target)) {
       if (
         containerRef.current &&
         !containerRef.current.contains(event.target) &&
@@ -172,6 +217,9 @@ function Schedule() {
     if (selectedMonth != null) {
       setMonth(selectedMonth);
     }
+    setSchedule({
+      name: "",
+    });
   };
 
   const handleModalClose = () => {
@@ -182,6 +230,9 @@ function Schedule() {
       setSelectedFriends([]);
       setLastSelectedIndex(null);
       setSchedule({});
+      const formattedDate =
+        today && dayjs(today).isValid() ? dayjs(today).format("YYYY-MM-DD") : "";
+      setDay(formattedDate);
       formik.resetForm();
     }, 300);
     formik.resetForm();
@@ -219,6 +270,30 @@ function Schedule() {
   useEffect(() => {
     changeToSpecificDate();
     const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
+    setSearchParams({
+      ...searchParams,
+      searchDate: searchDate,
+    });
+
+    const yearParams = {
+      goalType: "goal_type_001",
+      searchDate: searchDate,
+      detail: false,
+    };
+    goalFunc.findGoalBy(yearParams).then((res) => {
+      setYearGoal(res.data);
+    });
+
+    const monthParams = {
+      goalType: "goal_type_002",
+      searchDate: searchDate,
+      detail: true,
+    };
+    goalFunc.findGoalBy(monthParams).then((res) => {
+      setMonthGoal(res.data);
+      goalToEvents(res.data?.children);
+    });
+
     func.findSchedules(searchDate).then((res) => {
       dataToEvents(res.data);
     });
@@ -246,6 +321,35 @@ function Schedule() {
     }
   };
 
+  const goalToEvents = (children) => {
+    if (children && children.length > 0) {
+      const newEvents = [];
+      children.forEach((child) => {
+        if (child.schedule) {
+          newEvents.push({
+            id: String(child.schedule.scheduleId),
+            title: child.schedule.name,
+            start: child.schedule.startDtm,
+            end: child.schedule.endDtm,
+            extendedProps: {
+              goalId: child.goalId,
+              userId: child.schedule.userId,
+              userName: child.schedule.userName,
+              location: child.schedule.location,
+              shared: child.schedule.shared,
+            },
+          });
+          setCheckedEvents((prevState) => ({
+            ...prevState,
+            [child.goalId]: child.isAchieve,
+          }));
+        }
+      });
+
+      setGoalEvents(newEvents);
+    }
+  };
+
   useEffect(() => {
     func.findSchedules(today.toISOString().split("T")[0]).then((res) => {
       dataToEvents(res.data);
@@ -253,6 +357,7 @@ function Schedule() {
   }, []);
 
   const [events, setEvents] = useState([]);
+  const [goalEvents, setGoalEvents] = useState([]);
 
   const handleClickAway = (e) => {
     if (anchorEl && !anchorEl.contains(e.target)) {
@@ -266,18 +371,24 @@ function Schedule() {
     }
   };
 
-  const handleContextMenu = (event, type) => {
+  const handleContextMenu = (event, type, isGoal) => {
     event.preventDefault(); // 기본 우클릭 메뉴 방지
     setContextMenu({
       x: event.clientX,
       y: event.clientY,
       open: true,
+      isGoal: isGoal ? isGoal : false,
       type, // 우클릭한 요소의 타입 저장
     });
   };
 
   const handleRightMenuClose = () => {
     setContextMenu(null);
+    if (create) {
+      setSchedule({
+        name: "",
+      });
+    }
   };
 
   const handleClickAwayContext = (e) => {
@@ -341,9 +452,44 @@ function Schedule() {
 
   const handleDayCellMount = (info) => {
     info.el.addEventListener("contextmenu", (e) => {
+      const formattedDate =
+        info.date && dayjs(info.date).isValid() ? dayjs(info.date).format("YYYY-MM-DD") : "";
+      setDay(formattedDate);
       e.preventDefault(); // 기본 우클릭 메뉴 방지
       setCreate(true);
       handleContextMenu(e, "day");
+    });
+  };
+
+  const handleCheckboxChange = (goalId, e) => {
+    setCheckedEvents((prevState) => ({
+      ...prevState,
+      [goalId]: e.target.checked,
+    }));
+    const updateProps = {
+      goalId: goalId,
+      isArchive: e.target.checked,
+    };
+    goalFunc.updateGoal(updateProps).catch((rej) => {
+      setPopUpProps({
+        ...popupProps,
+        open: true,
+        icon: "warning",
+        color: "warning",
+        title: "일정관리",
+        content: "존재하지 않는 목표입니다.",
+      });
+      const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
+      const monthParams = {
+        goalType: "goal_type_002",
+        searchDate: searchDate,
+        detail: true,
+      };
+
+      goalFunc.findGoalBy(monthParams).then((res) => {
+        setMonthGoal(res.data);
+        goalToEvents(res.data?.children);
+      });
     });
   };
 
@@ -351,9 +497,10 @@ function Schedule() {
     info.el.addEventListener("contextmenu", (e) => {
       e.preventDefault(); // 기본 우클릭 메뉴 방지
       e.stopPropagation();
-      setName(info.event.extendedProps.goalId ? "목표" : "일정");
+      setIsGoal(info.event.extendedProps.goalId);
       setCreate(false);
       setSchedule({
+        goalId: info.event.extendedProps.goalId,
         scheduleId: info.event.id,
         name: info.event.title,
         startDate: info.event.startStr.split("T")[0],
@@ -369,7 +516,7 @@ function Schedule() {
         userId: info.event.extendedProps.userId,
         userName: info.event.extendedProps.userName,
       });
-      handleContextMenu(e, "edit");
+      handleContextMenu(e, "edit", info.event.extendedProps.goalId);
     });
   };
 
@@ -542,8 +689,15 @@ function Schedule() {
     helperText: formik.touched[fieldName] && formik.errors[fieldName],
     value: formik.values[fieldName],
     onChange: (e) => {
-      setSchedule((prev) => ({ ...prev, [fieldName]: e.target.value }));
-      formik.handleChange(e);
+      const value = e.target.value;
+      const encoder = new TextEncoder();
+      const byteLength = encoder.encode(value).length;
+      const max = 255;
+
+      if (byteLength <= max) {
+        setSchedule((prev) => ({ ...prev, [fieldName]: e.target.value }));
+        formik.handleChange(e);
+      }
     },
   });
 
@@ -594,7 +748,7 @@ function Schedule() {
     validationSchema: Yup.object({
       name: Yup.string()
         .max(255)
-        .required("* " + name + "명을 입력하세요"),
+        .required("* " + (isGoal ? "목표" : "일정") + "명을 입력하세요"),
       startDate: Yup.string().required("* 시작일을 선택하세요"),
       startTime: Yup.string().required("* 시작 시간을 선택하세요"),
       endTime: Yup.string().required("* 종료 시간을 선택하세요"),
@@ -683,17 +837,56 @@ function Schedule() {
           : `${schedule.startDate}T${schedule.endTime}`,
         location: schedule.location,
       };
-      func.createSchedule(createProps).then((res) => {
-        setDisabled(false);
-        handleModalClose();
-        const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
-        func.findSchedules(searchDate).then((res) => {
-          if (res.data && res.data.length > 0) {
-            dataToEvents(res.data);
-            setCalendarRender((prev) => !prev);
-          }
+      if (isGoal) {
+        const create = {
+          parentGoalId: monthGoal.goalId,
+          name: schedule.name,
+          goalType: "goal_type_003",
+          startDate: schedule.startDate,
+          endDate: schedule.endDate,
+          schedule: createProps,
+        };
+        goalFunc
+          .createGoal(create)
+          .then((res) => {
+            setDisabled(false);
+            handleModalClose();
+            const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
+            const monthParams = {
+              goalType: "goal_type_002",
+              searchDate: searchDate,
+              detail: true,
+            };
+            goalFunc.findGoalBy(monthParams).then((res) => {
+              setMonthGoal(res.data);
+              goalToEvents(res.data?.children);
+            });
+          })
+          .catch((rej) => {
+            if (rej.response.data.message) {
+              setPopUpProps({
+                ...popupProps,
+                open: true,
+                icon: "warning",
+                color: "error",
+                title: "일정관리",
+                content: rej.response.data.message,
+              });
+            }
+          });
+      } else {
+        func.createSchedule(createProps).then((res) => {
+          setDisabled(false);
+          handleModalClose();
+          const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
+          func.findSchedules(searchDate).then((res) => {
+            if (res.data && res.data.length > 0) {
+              dataToEvents(res.data);
+              setCalendarRender((prev) => !prev);
+            }
+          });
         });
-      });
+      }
     } else {
       setDisabled(true);
       const updateProps = {
@@ -704,8 +897,103 @@ function Schedule() {
           : `${schedule.startDate}T${schedule.endTime}`,
         location: schedule.location,
       };
+
+      if (isGoal) {
+        const update = {
+          goalId: schedule.goalId,
+          name: schedule.name,
+          startDate: schedule.startDate,
+          endDate: schedule.endDate,
+          schedule: updateProps,
+        };
+        goalFunc
+          .updateGoal(update)
+          .catch((rej) => {
+            setPopUpProps({
+              ...popupProps,
+              open: true,
+              icon: "warning",
+              color: "warning",
+              title: "일정관리",
+              content: "존재하지 않는 목표입니다.",
+            });
+          })
+          .finally(() => {
+            setDisabled(false);
+            handleModalClose();
+            const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
+            const monthParams = {
+              goalType: "goal_type_002",
+              searchDate: searchDate,
+              detail: true,
+            };
+            goalFunc.findGoalBy(monthParams).then((res) => {
+              setMonthGoal(res.data);
+              goalToEvents(res.data?.children);
+            });
+          });
+      } else {
+        func
+          .updateSchedule(schedule.scheduleId, updateProps)
+          .catch((rej) => {
+            setPopUpProps({
+              ...popupProps,
+              open: true,
+              icon: "warning",
+              color: "warning",
+              title: "일정관리",
+              content: "존재하지 않는 일정입니다.",
+            });
+          })
+          .finally(() => {
+            setDisabled(false);
+            handleModalClose();
+            const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
+            func.findSchedules(searchDate).then((res) => {
+              if (res.data && res.data.length > 0) {
+                dataToEvents(res.data);
+                setCalendarRender((prev) => !prev);
+              }
+            });
+          });
+      }
+    }
+  };
+
+  const handleClickDelete = (e) => {
+    e.preventDefault();
+
+    if (isGoal) {
+      goalFunc
+        .deleteGoal(schedule.goalId)
+        .catch((rej) => {
+          setPopUpProps({
+            ...popupProps,
+            open: true,
+            icon: "warning",
+            color: "warning",
+            title: "일정관리",
+            content: "존재하지 않는 목표입니다.",
+          });
+        })
+        .finally(() => {
+          setDisabled(false);
+          handleCClose();
+          handleModalClose();
+          const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
+          const monthParams = {
+            goalType: "goal_type_002",
+            searchDate: searchDate,
+            detail: true,
+          };
+          goalFunc.findGoalBy(monthParams).then((res) => {
+            setMonthGoal(res.data);
+            goalToEvents(res.data?.children);
+          });
+        });
+    } else {
       func
-        .updateSchedule(schedule.scheduleId, updateProps)
+        .deleteSchedule(schedule.scheduleId)
         .catch((rej) => {
           setPopUpProps({
             ...popupProps,
@@ -718,6 +1006,7 @@ function Schedule() {
         })
         .finally(() => {
           setDisabled(false);
+          handleCClose();
           handleModalClose();
           const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
           func.findSchedules(searchDate).then((res) => {
@@ -728,35 +1017,6 @@ function Schedule() {
           });
         });
     }
-  };
-
-  const handleClickDelete = (e) => {
-    e.preventDefault();
-
-    func
-      .deleteSchedule(schedule.scheduleId)
-      .catch((rej) => {
-        setPopUpProps({
-          ...popupProps,
-          open: true,
-          icon: "warning",
-          color: "warning",
-          title: "일정관리",
-          content: "존재하지 않는 일정입니다.",
-        });
-      })
-      .finally(() => {
-        setDisabled(false);
-        handleCClose();
-        handleModalClose();
-        const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
-        func.findSchedules(searchDate).then((res) => {
-          if (res.data && res.data.length > 0) {
-            dataToEvents(res.data);
-            setCalendarRender((prev) => !prev);
-          }
-        });
-      });
   };
 
   const handleClickSDelete = (e) => {
@@ -868,6 +1128,79 @@ function Schedule() {
       });
   };
 
+  const [overflowState, setOverflowState] = useState(false);
+
+  const handleEnter = (e) => {
+    if (e.key === "Enter") {
+      saveGoal();
+    }
+  };
+
+  const saveGoal = () => {
+    if (!monthGoal || !monthGoal.name) {
+      setEdit(false);
+      return;
+    } else {
+      if (monthGoal.goalId) {
+        goalFunc
+          .updateGoal(monthGoal)
+          .then((res) => {
+            setEdit(false);
+
+            const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
+            const monthParams = {
+              goalType: "goal_type_002",
+              searchDate: searchDate,
+              detail: true,
+            };
+            goalFunc.findGoalBy(monthParams).then((res) => {
+              setMonthGoal(res.data);
+              goalToEvents(res.data?.children);
+            });
+          })
+          .catch((rej) => {
+            if (rej.response.data.message) {
+              setPopUpProps({
+                ...popupProps,
+                open: true,
+                icon: "warning",
+                color: "error",
+                title: "일정관리",
+                content: rej.response.data.message,
+              });
+            }
+          });
+      } else {
+        const end = month === 11 ? new Date(year, month + 1, 31) : new Date(year, month + 2, 0);
+        const create = {
+          ...monthGoal,
+          parentGoalId: yearGoal.goalId,
+          goalType: "goal_type_002",
+          startDate: new Date(year, month + 1, 1).toISOString().split("T")[0],
+          endDate: end.toISOString().split("T")[0],
+        };
+        goalFunc
+          .createGoal(create)
+          .then((res) => {
+            setMonthGoal(res.data);
+            setEdit(false);
+          })
+          .catch((rej) => {
+            if (rej.response.data.message) {
+              setPopUpProps({
+                ...popupProps,
+                open: true,
+                icon: "warning",
+                color: "error",
+                title: "일정관리",
+                content: rej.response.data.message,
+              });
+            }
+          });
+      }
+    }
+  };
+
   return (
     <>
       <MDBox
@@ -975,6 +1308,113 @@ function Schedule() {
                 &gt;
               </MDButton>
             </MDBox>
+            {yearGoal ? (
+              <MDBox
+                className="testMD"
+                sx={{
+                  position: "absolute",
+                  right: 0,
+                  cursor: "pointer",
+                  height: "2.5rem",
+                  fontFamily: "Pretendard-Bold",
+                  fontSize: "1.5rem",
+                  justifyContent: "right",
+                  color: monthGoal?.name ? "black" : "#d3d3d3",
+                  letterSpacing: "0.1rem",
+                  width: `${window.innerWidth * 0.364583}px`,
+                  textAlign: "right",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {edit ? (
+                  <MDInput
+                    value={monthGoal?.name}
+                    placeholder="이번 달 목표를 설정해주세요"
+                    onBlur={() => {
+                      setEdit(false);
+                      saveGoal();
+                    }} // 포커스를 잃으면 편집 모드 해제
+                    onKeyDown={handleEnter}
+                    autoFocus // 자동 포커스
+                    autoComplete="off"
+                    fullWidth
+                    InputProps={{
+                      disableUnderline: true, // 기본 MUI 밑줄 제거
+                      sx: {
+                        width: "35rem",
+                        fontFamily: "Pretendard-Bold",
+                        fontSize: "1.5rem",
+                        letterSpacing: "0.1rem",
+                        color: "#d3d3d3",
+                        textAlign: "right",
+                        background: "transparent", // 배경 제거
+                        zIndex: 1100,
+                        "& .MuiInputBase-input": {
+                          padding: 0, // 입력 필드의 패딩 제거
+                          paddingTop: "0.145rem",
+                          textAlign: "right", // 입력 텍스트 가운데 정렬
+                          marginBottom: "0.195rem",
+                          color: "#344747",
+                        },
+                      },
+                    }}
+                    sx={{
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        border: "none", // fieldset의 border 제거
+                        outline: "none", // fieldset의 outline 제거
+                      },
+                      autoComplete: "off",
+                    }}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const encoder = new TextEncoder();
+                      const byteLength = encoder.encode(value).length;
+                      const max = 255;
+
+                      if (byteLength <= max) {
+                        setMonthGoal((prev) => ({ ...prev, name: e.target.value }));
+                      }
+                    }}
+                  />
+                ) : (
+                  <Tooltip
+                    title={overflowState ? monthGoal?.name : null}
+                    arrow
+                    placement="bottom-start"
+                    sx={{
+                      maxWidth: "100%",
+                    }}
+                    componentsProps={{
+                      tooltip: {
+                        sx: { fontFamily: "Pretendard-Bold" },
+                      },
+                      arrow: {
+                        sx: {
+                          left: "-5.5rem !important",
+                        },
+                      },
+                    }}
+                  >
+                    <span
+                      ref={(el) => {
+                        if (el) {
+                          const mdBoxWidth = window.innerWidth * 0.364583;
+                          setOverflowState(el.offsetWidth > mdBoxWidth);
+                        }
+                      }}
+                      style={{
+                        zIndex: 1100,
+                      }}
+                      onClick={() => setEdit(true)}
+                    >
+                      {monthGoal?.name || "이번 달 목표를 설정해주세요"}
+                    </span>
+                  </Tooltip>
+                )}
+              </MDBox>
+            ) : null}
           </MDBox>
         </MDBox>
         <FullCalendar
@@ -984,7 +1424,7 @@ function Schedule() {
           initialView="dayGridMonth"
           editable={false}
           selectable={false}
-          events={events}
+          events={[...events, ...goalEvents]}
           eventDidMount={handleEventCellMount}
           height="100%"
           locale="ko"
@@ -1010,6 +1450,43 @@ function Schedule() {
             return eventInfo.event.extendedProps.shared ? "shared-event" : "";
           }}
           headerToolbar={null}
+          eventContent={(info) => {
+            const start = info.event.startStr.split("T")[0];
+            const end = info.event.endStr.split("T")[0];
+            const isMultiDay = end && start !== end;
+            return (
+              <div style={{ display: "flex", alignItems: "center" }}>
+                {isMultiDay ? null : <div className="fc-daygrid-event-dot" />}
+                <div className="fc-event-title">{info.event.title}</div>
+                {info.event.extendedProps.goalId ? (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        icon={<RadioButtonUncheckedIcon style={{ fill: "#d3d3d3" }} />}
+                        checkedIcon={<TaskAltIcon style={{ fill: "green" }} />}
+                        checked={checkedEvents[info.event.extendedProps.goalId]}
+                        sx={{
+                          "& .MuiSvgIcon-root": {
+                            background: "transparent",
+                            backgroundImage: "none !important",
+                            border: "none",
+                            width: "1rem",
+                            height: "1rem",
+                            fontSize: "unset",
+                          },
+                          marginLeft: "0.75rem",
+                          width: "1rem",
+                          height: "1rem",
+                          marginTop: "2px",
+                        }}
+                        onChange={(e) => handleCheckboxChange(info.event.extendedProps.goalId, e)}
+                      />
+                    }
+                  />
+                ) : null}
+              </div>
+            );
+          }}
         />
       </MDBox>
       <ClickAwayListener onClickAway={handleClickAway}>
@@ -1166,24 +1643,36 @@ function Schedule() {
               switch (contextMenu.type) {
                 case "day":
                   return [
-                    /*<MenuItem
-                      {...itemStyle}
-                      key="add-goal"
-                      onClick={() => {
-                        handleRightMenuClose();
-                        setName("목표");
-                        setScheduleReg(true);
-                      }}
-                    >
-                      목표 등록
-                    </MenuItem>,*/
+                    monthGoal && monthGoal.goalId ? (
+                      <MenuItem
+                        {...itemStyle}
+                        key="add-goal"
+                        onClick={() => {
+                          handleRightMenuClose();
+                          setIsGoal(true);
+                          setScheduleReg(true);
+                          setSchedule({
+                            ...schedule,
+                            startDate: day,
+                            endDate: day,
+                          });
+                        }}
+                      >
+                        목표 등록
+                      </MenuItem>
+                    ) : null,
                     <MenuItem
                       {...itemStyle}
                       key="add-schedule"
                       onClick={() => {
                         handleRightMenuClose();
-                        setName("일정");
+                        setIsGoal(false);
                         setScheduleReg(true);
+                        setSchedule({
+                          ...schedule,
+                          startDate: day,
+                          endDate: day,
+                        });
                       }}
                     >
                       일정 등록
@@ -1201,7 +1690,7 @@ function Schedule() {
                     >
                       상세 보기
                     </MenuItem>,
-                    !schedule.shared ? (
+                    !schedule.shared && !schedule.goalId ? (
                       <MenuItem
                         {...itemStyle}
                         key="share"
@@ -1213,9 +1702,7 @@ function Schedule() {
                       >
                         공유하기
                       </MenuItem>
-                    ) : (
-                      <></>
-                    ),
+                    ) : null,
                   ];
                 default:
                   return [
@@ -1239,7 +1726,7 @@ function Schedule() {
                 {...inputCore(formik, "name", setSchedule)}
                 {...inputStyles}
                 type="text"
-                label={name + "명" + (schedule.shared ? "" : " *")}
+                label={(isGoal ? "목표" : "일정") + "명" + (schedule.shared ? "" : " *")}
                 name="name"
                 id="name"
                 key="name"
@@ -1272,6 +1759,7 @@ function Schedule() {
                   views={["year", "month", "day"]}
                   format="YYYY-MM-DD"
                   value={schedule.startDate ? dayjs(schedule.startDate) : null}
+                  //defaultValue={dayjs(day)}
                   slotProps={datePickerStyles}
                   sx={{
                     width: "7rem",
@@ -1285,6 +1773,7 @@ function Schedule() {
                   views={["year", "month", "day"]}
                   format="YYYY-MM-DD"
                   value={schedule.endDate ? dayjs(schedule.endDate) : null}
+                  //defaultValue={dayjs(day)}
                   slotProps={datePickerStyles}
                   sx={{
                     width: "7rem",
@@ -1350,10 +1839,17 @@ function Schedule() {
                 label="장소"
                 name="location"
                 id="location"
-                value={schedule.location}
+                value={schedule.location || ""}
                 fullWidth
                 onChange={(e) => {
-                  setSchedule((prev) => ({ ...prev, location: e.target.value }));
+                  const value = e.target.value;
+                  const encoder = new TextEncoder();
+                  const byteLength = encoder.encode(value).length;
+                  const max = 255;
+
+                  if (byteLength <= max) {
+                    setSchedule((prev) => ({ ...prev, location: e.target.value }));
+                  }
                 }}
               />
             </MDBox>

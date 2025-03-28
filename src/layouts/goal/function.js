@@ -58,3 +58,16 @@ export async function updateGoal(props) {
       });
   });
 }
+
+export async function deleteGoal(goalId) {
+  return new Promise((resolve, reject) => {
+    axios
+      .delete("/planner/api/goal/" + goalId)
+      .then((response) => {
+        resolve(response.data);
+      })
+      .catch((err) => {
+        if (err.response.status === 404) reject(err);
+      });
+  });
+}
