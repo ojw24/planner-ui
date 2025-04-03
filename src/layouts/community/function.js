@@ -107,6 +107,19 @@ export async function findBoardMemoComments(boardId, boardMemoId, props) {
   });
 }
 
+export async function findBoardCommentOrder(boardMemoId, boardCommentId) {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`/planner/api/board/memo/${boardMemoId}/comment/${boardCommentId}`)
+      .then((response) => {
+        resolve(response.data);
+      })
+      .catch((err) => {
+        if (err.response.status === 404) reject(err);
+      });
+  });
+}
+
 export async function updateBoardMemoComment(boardId, boardMemoId, boardCommentId, content) {
   return new Promise((resolve, reject) => {
     axios

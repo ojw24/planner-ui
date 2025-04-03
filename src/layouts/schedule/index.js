@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { flushSync } from "react-dom";
 import { useFormik } from "formik";
 
@@ -48,7 +49,7 @@ dayjs.locale("ko");
 
 function Schedule() {
   const today = new Date();
-  const [calendarRender, setCalendarRender] = useState(false);
+  const location = useLocation();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [day, setDay] = useState(dayjs(today).format("YYYY-MM-DD"));
@@ -144,6 +145,36 @@ function Schedule() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const [highlightId, setHighlightId] = useState(null);
+  useEffect(() => {
+    if (location.state?.reqId) {
+      setScheduleShareReq(true);
+      const highlightElement = async () => {
+        const targetElement = document.getElementById("friendRequest" + location.state.reqId);
+
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: "instant", block: "center" });
+
+          await new Promise((resolve) => setTimeout(resolve, 50));
+
+          setHighlightId(location.state.reqId);
+
+          setTimeout(() => setHighlightId(null), 1000);
+        }
+      };
+
+      const delayThenHighlight = async () => {
+        await new Promise((resolve) => setTimeout(resolve, 500)); // 200ms 대기
+        highlightElement();
+      };
+
+      delayThenHighlight();
+
+      const { reqId, ...newState } = location.state || {};
+      window.history.replaceState({ ...newState }, "");
+    }
+  }, [location.state]);
 
   const handleSelectFriend = (event, friend, index) => {
     if (event.shiftKey && lastSelectedIndex !== null) {
@@ -358,6 +389,19 @@ function Schedule() {
 
   const [events, setEvents] = useState([]);
   const [goalEvents, setGoalEvents] = useState([]);
+
+  useEffect(() => {
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      const currentDate = calendarApi.getDate(); // 현재 날짜 가져오기
+
+      //calendarApi.refetchEvents(); // 새 이벤트 데이터 반영
+      calendarApi.removeAllEvents(); // 기존 이벤트 삭제
+      calendarApi.addEventSource(events); // 새로운 이벤트 추가
+      calendarApi.addEventSource(goalEvents);
+      calendarApi.gotoDate(currentDate); // 기존 날짜 유지
+    }
+  }, [events, goalEvents]);
 
   const handleClickAway = (e) => {
     if (anchorEl && !anchorEl.contains(e.target)) {
@@ -882,7 +926,6 @@ function Schedule() {
           func.findSchedules(searchDate).then((res) => {
             if (res.data && res.data.length > 0) {
               dataToEvents(res.data);
-              setCalendarRender((prev) => !prev);
             }
           });
         });
@@ -908,6 +951,13 @@ function Schedule() {
         };
         goalFunc
           .updateGoal(update)
+          .then((res) => {
+            setGoalEvents((prevEvents) =>
+              prevEvents.map((event) =>
+                event.goalId === update.goalId ? { ...event, schedule: update.schedule } : event
+              )
+            );
+          })
           .catch((rej) => {
             setPopUpProps({
               ...popupProps,
@@ -935,6 +985,13 @@ function Schedule() {
       } else {
         func
           .updateSchedule(schedule.scheduleId, updateProps)
+          .then((res) => {
+            setEvents((prevEvents) =>
+              prevEvents.map((event) =>
+                event.scheduleId === schedule.scheduleId ? { updateProps } : event
+              )
+            );
+          })
           .catch((rej) => {
             setPopUpProps({
               ...popupProps,
@@ -952,7 +1009,6 @@ function Schedule() {
             func.findSchedules(searchDate).then((res) => {
               if (res.data && res.data.length > 0) {
                 dataToEvents(res.data);
-                setCalendarRender((prev) => !prev);
               }
             });
           });
@@ -1012,7 +1068,6 @@ function Schedule() {
           func.findSchedules(searchDate).then((res) => {
             if (res.data && res.data.length > 0) {
               dataToEvents(res.data);
-              setCalendarRender((prev) => !prev);
             }
           });
         });
@@ -1042,7 +1097,6 @@ function Schedule() {
         func.findSchedules(searchDate).then((res) => {
           if (res.data && res.data.length > 0) {
             dataToEvents(res.data);
-            setCalendarRender((prev) => !prev);
           }
         });
       });
@@ -1074,6 +1128,16 @@ function Schedule() {
       };
       func
         .createScheduleShareRequest(schedule.scheduleId, props)
+        .then((res) => {
+          setPopUpProps({
+            ...popupProps,
+            open: true,
+            icon: "check",
+            color: "success",
+            title: "일정관리",
+            content: "일정 공유를 신청하였습니다.",
+          });
+        })
         .catch((rej) => {
           setPopUpProps({
             ...popupProps,
@@ -1091,7 +1155,6 @@ function Schedule() {
           func.findSchedules(searchDate).then((res) => {
             if (res.data && res.data.length > 0) {
               dataToEvents(res.data);
-              setCalendarRender((prev) => !prev);
             }
           });
         });
@@ -1119,7 +1182,6 @@ function Schedule() {
         func.findSchedules(searchDate).then((res) => {
           if (res.data && res.data.length > 0) {
             dataToEvents(res.data);
-            setCalendarRender((prev) => !prev);
           }
         });
         func.findScheduleShareRequests().then((res) => {
@@ -1260,10 +1322,10 @@ function Schedule() {
                       shareReqs.length >= 10
                         ? shareReqs.length >= 100
                           ? shareReqs.length > 999
-                            ? "-2.25rem"
-                            : "-1.85rem"
-                          : "-1.45rem"
-                        : "-1.05rem",
+                            ? "-1.75rem"
+                            : "-1.35rem"
+                          : "-0.95rem"
+                        : "-0.55rem",
                     backgroundColor: "#FF3D00",
                     color: "white !important",
                     fontSize: "0.7rem",
@@ -1418,7 +1480,6 @@ function Schedule() {
           </MDBox>
         </MDBox>
         <FullCalendar
-          key={Number(calendarRender)}
           ref={calendarRef}
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
@@ -1451,13 +1512,26 @@ function Schedule() {
           }}
           headerToolbar={null}
           eventContent={(info) => {
+            console.log(info);
             const start = info.event.startStr.split("T")[0];
             const end = info.event.endStr.split("T")[0];
             const isMultiDay = end && start !== end;
+            const isContinuedFromPreviousWeek = !info.isStart;
+
             return (
               <div style={{ display: "flex", alignItems: "center" }}>
                 {isMultiDay ? null : <div className="fc-daygrid-event-dot" />}
-                <div className="fc-event-title">{info.event.title}</div>
+                <div
+                  className={`fc-event-title ${isContinuedFromPreviousWeek ? "fc-sticky" : ""}`}
+                  style={{
+                    //width: "10rem",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {info.event.title}
+                </div>
                 {info.event.extendedProps.goalId ? (
                   <FormControlLabel
                     control={
@@ -2039,6 +2113,7 @@ function Schedule() {
                 <>
                   {shareReqs.map((s, idx) => (
                     <p
+                      id={"friendRequest" + s.reqId}
                       key={"friendRequest" + idx}
                       style={{
                         fontFamily: "Pretendard-Light",
@@ -2046,11 +2121,22 @@ function Schedule() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        marginBottom: "0.1rem",
+                        marginBottom: "0.3rem",
+                        backgroundColor: highlightId === s.reqId ? "#FFF3CD" : "transparent",
+                        transition: "background-color 0.5s ease-in-out",
                       }}
                     >
-                      {s.requesterName + "(" + s.requesterId.slice(0, -3) + "***" + ")"}
-                      {"님이 '" + s.schedule.name + "' 일정을 공유하였습니다."}
+                      <span
+                        style={{
+                          width: "80%",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {s.requesterName + "(" + s.requesterId.slice(0, -3) + "***" + ")"}
+                        {"님이 '" + s.schedule.name + "' 일정을 공유하였습니다."}
+                      </span>
                       <span>{"\u00A0\u00A0"}</span>
                       <MDBox display="flex" gap="0.25rem">
                         <MDButton

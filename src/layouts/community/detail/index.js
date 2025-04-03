@@ -4,22 +4,23 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import Card from "@mui/material/Card";
 import InputAdornment from "@mui/material/InputAdornment";
 
-import MDBox from "../../../components/MDBox";
+import MDBox from "components/MDBox";
 
 import {
   deleteBoardMemo,
   findBoardMemo,
   findBoardMemoComments,
+  findBoardCommentOrder,
   createBoardMemoComment,
   updateBoardMemoComment,
   deleteBoardMemoComment,
 } from "../function";
-import MDTypography from "../../../components/MDTypography";
+import MDTypography from "components/MDTypography";
 import Divider from "@mui/material/Divider";
-import MDButton from "../../../components/MDButton";
-import loading from "../../../assets/images/loading.gif";
+import MDButton from "components/MDButton";
+import loading from "assets/images/loading.gif";
 import Confirm from "components/Confirm";
-import MDSnackbar from "../../../components/MDSnackbar";
+import MDSnackbar from "components/MDSnackbar";
 import { FirstPage, LastPage } from "@mui/icons-material";
 import { Pagination, PaginationItem } from "@mui/material";
 import TextField from "@mui/material/TextField";
@@ -29,6 +30,7 @@ function BoardMemo() {
   const location = useLocation();
   const isAdmin = location.state?.isAdmin;
   const myId = location.state?.myId;
+  const [render, setRender] = useState(false);
   const [disabled, setDisabled] = useState(false);
   const boardId = 1;
   const { boardMemoId } = useParams();
@@ -86,7 +88,7 @@ function BoardMemo() {
     setCOpen((prev) => ({ ...prev, [id]: false }));
   };
 
-  useEffect(() => {
+  const renderPage = () => {
     findBoardMemo(boardId, boardMemoId)
       .then((res) => {
         setBoardMemo({
@@ -113,6 +115,7 @@ function BoardMemo() {
           }));
           setBoardMemoComment(mappedData);
           setCommentPages(cRes.data.totalPages);
+          setRender(!render);
         });
       })
       .catch((rej) => {
@@ -126,7 +129,74 @@ function BoardMemo() {
           content: "존재하지 않는 게시글입니다.",
         });
       });
+  };
+
+  useEffect(() => {
+    renderPage();
   }, []);
+
+  useEffect(() => {
+    renderPage();
+  }, [location.pathname]);
+
+  const [findOrd, setFindOrd] = useState(true);
+
+  const [highlightId, setHighlightId] = useState(null);
+  useEffect(() => {
+    const highlightElement = async () => {
+      if (location.state?.boardCommentId) {
+        await new Promise((resolve) => setTimeout(resolve, 250)); // 50ms 대기 (렌더링 보장)
+
+        const targetElement = document.getElementById("comment" + location.state.boardCommentId);
+
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: "instant", block: "center" });
+
+          await new Promise((resolve) => setTimeout(resolve, 50));
+
+          setHighlightId(location.state.boardCommentId);
+
+          setTimeout(() => setHighlightId(null), 1000);
+        } else if (findOrd) {
+          findBoardCommentOrder(boardMemoId, location.state.boardCommentId)
+            .then((res) => {
+              const newPage = Math.floor(res.data / 10);
+              const updateParams = {
+                page: newPage,
+                size: 10,
+              };
+
+              findBoardMemoComments(boardId, boardMemoId, updateParams).then((cRes) => {
+                const mappedData = cRes.data.content.map((item) => ({
+                  boardCommentId: item.boardCommentId,
+                  userId: item.userId,
+                  userName: item.userName,
+                  content: item.content,
+                  regDtm: item.regDtm.replace("T", " "),
+                  updtDtm: item.updtDtm ? item.updtDtm.replace("T", " ") : '"',
+                  isDeleted: item.isDeleted,
+                  children: item.children,
+                }));
+                setPageIndex(newPage);
+                setBoardMemoComment(mappedData);
+                setCommentPages(cRes.data.totalPages);
+                setRender(!render);
+              });
+            })
+            .catch((rej) => {})
+            .finally(() => {
+              setFindOrd(false); //무한루프 방지
+            });
+        }
+      }
+    };
+
+    highlightElement();
+  }, [render, location.state]);
+
+  useEffect(() => {
+    setFindOrd(true);
+  }, [location.state]);
 
   const dividerStyles = {
     marginY: 1,
@@ -503,10 +573,13 @@ function BoardMemo() {
   const renderComments = (comments, depth = 0) => {
     return comments.map((comment, idx) => (
       <div
+        id={"comment" + comment.boardCommentId}
         key={comment.boardCommentId}
         style={{
           width: "100%",
           paddingLeft: `${depth > 0 ? 1 : 0}%`,
+          backgroundColor: highlightId === comment.boardCommentId ? "#FFF3CD" : "transparent",
+          transition: "background-color 0.5s ease-in-out",
         }}
       >
         {editingStates[comment.boardCommentId] ? (
