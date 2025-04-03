@@ -113,3 +113,14 @@
 .fc-event-start .fc-sticky {
     opacity: 1 !important;
 }
+
+.fc-daygrid-day-frame {
+    position: relative; /* 부모 요소를 기준으로 자식이 제한됨 */
+}
+
+.fc-daygrid-event {
+    max-width: 100%; /* 부모 크기 이상으로 커지지 않게 함 */
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+    text-overflow: ellipsis; /* 넘칠 경우 '...' 처리 */
+    overflow: hidden;
+}

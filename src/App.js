@@ -239,7 +239,7 @@ export default function App() {
         <ThemeProvider theme={theme}>
           {!isResetPwd ? (
             <DashboardLayout>
-              <DashboardNavbar image={user.file.path} />
+              <DashboardNavbar image={user.file.path} settings={user.setting} />
               <CssBaseline />
               <MDBox pt={isHalf ? 0 : 8}>
                 {layout === "dashboard" && (

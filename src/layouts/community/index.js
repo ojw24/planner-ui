@@ -12,12 +12,12 @@ import MDBox from "components/MDBox";
 
 import DataTable from "examples/Tables/DataTable";
 
-import loading from "../../assets/images/loading.gif";
+import loading from "assets/images/loading.gif";
 import * as func from "./function";
 import Icon from "@mui/material/Icon";
-import MDTypography from "../../components/MDTypography";
-import MDInput from "../../components/MDInput";
-import MDButton from "../../components/MDButton";
+import MDTypography from "components/MDTypography";
+import MDInput from "components/MDInput";
+import MDButton from "components/MDButton";
 
 function Community({ isAdmin, myId }) {
   const navigate = useNavigate();

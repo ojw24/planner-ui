@@ -11,22 +11,23 @@ import Icon from "@mui/material/Icon";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import GroupIcon from "@mui/icons-material/Group";
 import ClickAwayListener from "@mui/base/ClickAwayListener";
-import { Tabs, Tab, Menu, MenuList, MenuItem } from "@mui/material";
+import { Tabs, Tab, Menu, MenuItem } from "@mui/material";
 import Divider from "@mui/material/Divider";
 
 import * as func from "./function";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
-import MDSnackbar from "../../components/MDSnackbar";
-import Confirm from "../../components/Confirm";
-import MDInput from "../../components/MDInput";
-import MDButton from "../../components/MDButton";
-import loading from "../../assets/images/loading.gif";
+import MDSnackbar from "components/MDSnackbar";
+import Confirm from "components/Confirm";
+import MDInput from "components/MDInput";
+import MDButton from "components/MDButton";
+import loading from "assets/images/loading.gif";
 import ga_cursor from "assets/images/ga_cursor.png";
 
 function Friend() {
   const [controller, dispatch] = useMaterialUIController();
-  const { openFriend, darkMode, ignoreF } = controller;
+  const { openFriend, darkMode, ignoreF, friendData } = controller;
+  console.log(friendData);
   const [activeTab, setActiveTab] = useState(0);
   const [contextMenu, setContextMenu] = useState(null);
   const [friendGrps, setFriendGrps] = useState([]);
@@ -90,12 +91,38 @@ function Friend() {
       setGrpName("");
       setEditingStates({});
       setTempTexts({});
-      setActiveTab(0);
+      setActiveTab(friendData?.reqId ? 2 : 0);
       setTargetId();
       setSearchValue("");
       setSearchResult();
     }
   }, [openFriend]);
+
+  const [highlightId, setHighlightId] = useState(null);
+  useEffect(() => {
+    if (friendData?.reqId) {
+      const highlightElement = async () => {
+        const targetElement = document.getElementById("friendRequest" + friendData.reqId);
+
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: "instant", block: "center" });
+
+          await new Promise((resolve) => setTimeout(resolve, 50));
+
+          setHighlightId(friendData.reqId);
+
+          setTimeout(() => setHighlightId(null), 1000);
+        }
+      };
+
+      const delayThenHighlight = async () => {
+        await new Promise((resolve) => setTimeout(resolve, 200)); // 200ms 대기
+        highlightElement();
+      };
+
+      delayThenHighlight();
+    }
+  }, [friendData]);
 
   const tabStyle = {
     sx: {
@@ -1129,11 +1156,20 @@ function Friend() {
               </MDBox>
             )}
             {activeTab === 2 && (
-              <MDBox>
+              <MDBox
+                sx={{
+                  overflowY: "auto",
+                  scrollbarWidth: "none",
+                  "&::-webkit-scrollbar": {
+                    display: "none", // 크롬, 사파리 스크롤바 숨김
+                  },
+                }}
+              >
                 {friendRequests && friendRequests.length > 0 ? (
                   <>
                     {friendRequests.map((f, idx) => (
                       <p
+                        id={"friendRequest" + f.friendReqId}
                         key={"friendRequest" + idx}
                         style={{
                           fontFamily: "Pretendard-Light",
@@ -1142,6 +1178,9 @@ function Friend() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "space-between",
+                          backgroundColor:
+                            highlightId === f.friendReqId ? "#FFF3CD" : "transparent",
+                          transition: "background-color 0.5s ease-in-out",
                         }}
                       >
                         {f.targetName + "(" + f.targetId.slice(0, -3) + "***" + ")"}
