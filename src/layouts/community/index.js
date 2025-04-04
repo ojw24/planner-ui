@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import PropTypes from "prop-types";
 
-import { Pagination, PaginationItem, Grid, Card } from "@mui/material";
+import { Pagination, PaginationItem, Grid, Card, Skeleton } from "@mui/material";
 import { FirstPage, LastPage } from "@mui/icons-material";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
@@ -19,10 +18,11 @@ import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 
-function Community({ isAdmin, myId }) {
+function Community() {
   const navigate = useNavigate();
   const location = useLocation();
   const effectRan = useRef(false);
+  const [rendering, setRendering] = useState(true);
   const [disabled, setDisabled] = useState(false);
   const [searchType, setSearchType] = useState(
     new URLSearchParams(location.search).get("searchType") || "title"
@@ -45,6 +45,13 @@ function Community({ isAdmin, myId }) {
   };
   const [pageIndex, setPageIndex] = useState(getPageFromURL());
 
+  const skeletonRowData = Array.from({ length: 9 }).map(() => ({
+    number: <Skeleton variant="rounded" width={62} height={22.7} />,
+    title: <Skeleton variant="rounded" width={705} height={22.7} />,
+    writer: <Skeleton variant="rounded" width={118} height={22.7} />,
+    regDate: <Skeleton variant="rounded" width={84} height={22.7} />,
+  }));
+
   useEffect(() => {
     const handlePopState = handleBack();
 
@@ -58,10 +65,7 @@ function Community({ isAdmin, myId }) {
                 `/community/detail/${item.boardMemoId}?page=${res.data.number}&searchType=${
                   searchParams.searchType || "title"
                 }${searchParams.searchValue ? `&searchValue=${searchParams.searchValue}` : ""}
-                `,
-                {
-                  state: { isAdmin, myId },
-                }
+                `
               );
             }}
             style={{ cursor: "pointer" }}
@@ -74,6 +78,7 @@ function Community({ isAdmin, myId }) {
         writer: item.userName + "(" + item.userId.slice(0, -3) + "***" + ")",
         regDate: item.regDtm.split("T")[0],
       }));
+      setRendering(false);
       setRows(mappedData);
       setPages(res.data.totalPages);
     });
@@ -214,10 +219,7 @@ function Community({ isAdmin, myId }) {
                 `/community/detail/${item.boardMemoId}?page=${res.data.number}&searchType=${
                   searchParams.searchType || "title"
                 }${searchParams.searchValue ? `&searchValue=${searchParams.searchValue}` : ""}
-                `,
-                {
-                  state: { isAdmin, myId },
-                }
+                `
               );
             }}
             style={{ cursor: "pointer" }}
@@ -242,9 +244,7 @@ function Community({ isAdmin, myId }) {
   };
 
   const handleRegister = () => {
-    navigate("/community/register", {
-      state: { isAdmin, myId },
-    });
+    navigate("/community/register");
   };
 
   const search = () => {
@@ -267,10 +267,7 @@ function Community({ isAdmin, myId }) {
                 `/community/detail/${item.boardMemoId}?page=${res.data.number}&searchType=${
                   searchParams.searchType || "title"
                 }${searchParams.searchValue ? `&searchValue=${searchParams.searchValue}` : ""}
-                `,
-                {
-                  state: { isAdmin, myId },
-                }
+                `
               );
             }}
             style={{ cursor: "pointer" }}
@@ -317,6 +314,14 @@ function Community({ isAdmin, myId }) {
                 {rows && rows.length > 0 ? (
                   <DataTable
                     table={{ columns, rows }}
+                    isSorted={false}
+                    entriesPerPage={false}
+                    showTotalEntries={false}
+                    noEndBorder
+                  />
+                ) : rendering ? (
+                  <DataTable
+                    table={{ columns, rows: skeletonRowData }}
                     isSorted={false}
                     entriesPerPage={false}
                     showTotalEntries={false}
@@ -582,15 +587,5 @@ function Community({ isAdmin, myId }) {
     </>
   );
 }
-
-Community.defaultProps = {
-  isAdmin: false,
-  myId: "",
-};
-
-Community.propTypes = {
-  isAdmin: PropTypes.bool.isRequired,
-  myId: PropTypes.string.isRequired,
-};
 
 export default Community;

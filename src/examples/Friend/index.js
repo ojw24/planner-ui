@@ -27,7 +27,6 @@ import ga_cursor from "assets/images/ga_cursor.png";
 function Friend() {
   const [controller, dispatch] = useMaterialUIController();
   const { openFriend, darkMode, ignoreF, friendData } = controller;
-  console.log(friendData);
   const [activeTab, setActiveTab] = useState(0);
   const [contextMenu, setContextMenu] = useState(null);
   const [friendGrps, setFriendGrps] = useState([]);

@@ -24,12 +24,14 @@ import MDSnackbar from "components/MDSnackbar";
 import { FirstPage, LastPage } from "@mui/icons-material";
 import { Pagination, PaginationItem } from "@mui/material";
 import TextField from "@mui/material/TextField";
+import * as commonFunc from "../../common/function";
 
 function BoardMemo() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isAdmin = location.state?.isAdmin;
-  const myId = location.state?.myId;
+  const queryParams = new URLSearchParams(location.search);
+  const isAdmin = commonFunc.parseJwt("isAdmin");
+  const myId = commonFunc.parseJwt("id");
   const [render, setRender] = useState(false);
   const [disabled, setDisabled] = useState(false);
   const boardId = 1;
@@ -211,7 +213,7 @@ function BoardMemo() {
   const handleClickUpdate = () => {
     setDisabled(true);
     navigate("/community/register", {
-      state: { isAdmin, myId, boardMemo },
+      state: { boardMemo },
     });
   };
 
@@ -221,9 +223,7 @@ function BoardMemo() {
     deleteBoardMemo(1, boardMemoId)
       .then((res) => {
         handleClose();
-        navigate("/community", {
-          state: { isAdmin, myId },
-        });
+        navigate("/community");
       })
       .catch((rej) => {
         handleClose();
@@ -930,7 +930,21 @@ function BoardMemo() {
             variant="button"
             color="text"
             textGradient
-            onClick={() => window.history.back()} // 뒤로 가기
+            onClick={() => {
+              const page = queryParams.get("page");
+              const searchType = queryParams.get("searchType");
+              const searchValue = queryParams.get("searchValue");
+
+              const queryObj = new URLSearchParams();
+
+              if (page) queryObj.append("page", page);
+              if (searchType) queryObj.append("searchType", searchType);
+              if (searchValue) queryObj.append("searchValue", searchValue);
+
+              const url = queryObj.toString() ? `/community?${queryObj.toString()}` : "/community";
+
+              navigate(url);
+            }}
             sx={{
               fontFamily: "'Pretendard-Light', sans-serif",
               cursor: "pointer", // 마우스 호버 시 커서 변경

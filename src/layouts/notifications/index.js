@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 // @mui material components
-import { Pagination, PaginationItem, Grid, Card } from "@mui/material";
+import { Pagination, PaginationItem, Grid, Card, Skeleton } from "@mui/material";
 import { FirstPage, LastPage } from "@mui/icons-material";
 
 // Material Dashboard 2 React components
@@ -16,19 +16,21 @@ import Icon from "@mui/material/Icon";
 import DataTable from "examples/Tables/DataTable";
 
 // Data
-import PropTypes from "prop-types";
-import loading from "../../assets/images/loading.gif";
+import loading from "assets/images/loading.gif";
 import * as func from "./function";
+import * as commonFunc from "layouts/common/function";
 
-function Notifications({ isAdmin }) {
+function Notifications() {
   const navigate = useNavigate();
   const location = useLocation();
+  const isAdmin = commonFunc.parseJwt("isAdmin");
   const getPageFromURL = () => {
     const queryParams = new URLSearchParams(location.search);
     return Number(queryParams.get("page")) || 0;
   };
 
   const effectRan = useRef(false);
+  const [rendering, setRendering] = useState(true);
   const [disabled, setDisabled] = useState(false);
   const [searchParams, setSearchParams] = useState({
     searchValue: new URLSearchParams(location.search).get("searchValue") || "",
@@ -100,6 +102,12 @@ function Notifications({ isAdmin }) {
     return handlePopState;
   }
 
+  const skeletonRowData = Array.from({ length: 9 }).map(() => ({
+    number: <Skeleton variant="rounded" width={68} height={22.7} />,
+    title: <Skeleton variant="rounded" width={859} height={22.7} />,
+    regDate: <Skeleton variant="rounded" width={90} height={22.7} />,
+  }));
+
   useEffect(() => {
     const handlePopState = handleBack();
 
@@ -112,10 +120,7 @@ function Notifications({ isAdmin }) {
               navigate(
                 `/notifications/detail/${item.noticeId}?page=${res.data.number}${
                   searchParams.searchValue ? `&searchValue=${searchParams.searchValue}` : ""
-                }`,
-                {
-                  state: { isAdmin },
-                }
+                }`
               );
             }}
             style={{ cursor: "pointer" }}
@@ -130,6 +135,7 @@ function Notifications({ isAdmin }) {
       }));
       setRows(mappedData);
       setPages(res.data.totalPages);
+      setRendering(false);
     });
 
     return () => {
@@ -182,10 +188,7 @@ function Notifications({ isAdmin }) {
               navigate(
                 `/notifications/detail/${item.noticeId}?page=${res.data.number}${
                   searchParams.searchValue ? `&searchValue=${searchParams.searchValue}` : ""
-                }`,
-                {
-                  state: { isAdmin },
-                }
+                }`
               );
             }}
             style={{ cursor: "pointer" }}
@@ -239,10 +242,7 @@ function Notifications({ isAdmin }) {
               navigate(
                 `/notifications/detail/${item.noticeId}?page=${res.data.number}${
                   updatedParams.searchValue ? `&searchValue=${updatedParams.searchValue}` : ""
-                }`,
-                {
-                  state: { isAdmin },
-                }
+                }`
               );
             }}
             style={{ cursor: "pointer" }}
@@ -269,9 +269,7 @@ function Notifications({ isAdmin }) {
   };
 
   const handleRegister = () => {
-    navigate("/notifications/register", {
-      state: { isAdmin },
-    });
+    navigate("/notifications/register");
   };
 
   return (
@@ -284,6 +282,14 @@ function Notifications({ isAdmin }) {
                 {rows && rows.length > 0 ? (
                   <DataTable
                     table={{ columns, rows }}
+                    isSorted={false}
+                    entriesPerPage={false}
+                    showTotalEntries={false}
+                    noEndBorder
+                  />
+                ) : rendering ? (
+                  <DataTable
+                    table={{ columns, rows: skeletonRowData }}
                     isSorted={false}
                     entriesPerPage={false}
                     showTotalEntries={false}
@@ -507,13 +513,5 @@ function Notifications({ isAdmin }) {
     </>
   );
 }
-
-Notifications.defaultProps = {
-  isAdmin: false,
-};
-
-Notifications.propTypes = {
-  isAdmin: PropTypes.bool.isRequired,
-};
 
 export default Notifications;
