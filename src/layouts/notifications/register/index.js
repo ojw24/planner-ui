@@ -17,7 +17,6 @@ import { createNotice, updateNotice } from "../function";
 function Register() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isAdmin = location.state?.isAdmin;
   const noticeData = location.state?.notice;
   const [disabled, setDisabled] = useState(false);
   const [notice, setNotice] = useState({
@@ -181,9 +180,7 @@ function Register() {
   function closePopUp(redirect) {
     setPopUpProps({ ...popupProps, open: false });
     if (redirect) {
-      navigate("/notifications", {
-        state: { isAdmin },
-      });
+      navigate("/notifications");
     }
   }
 

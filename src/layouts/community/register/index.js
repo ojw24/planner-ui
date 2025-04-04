@@ -5,20 +5,18 @@ import { useFormik } from "formik";
 import Card from "@mui/material/Card";
 import { TextField } from "@mui/material";
 
-import MDBox from "../../../components/MDBox";
-import MDInput from "../../../components/MDInput";
+import MDBox from "components/MDBox";
+import MDInput from "components/MDInput";
 import MDSnackbar from "components/MDSnackbar";
 import * as Yup from "yup";
-import loading from "../../../assets/images/loading.gif";
-import MDButton from "../../../components/MDButton";
+import loading from "assets/images/loading.gif";
+import MDButton from "components/MDButton";
 
 import { createBoardMemo, updateBoardMemo } from "../function";
 
 function Register() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isAdmin = location.state?.isAdmin;
-  const myId = location.state?.myId;
   const boardMemoData = location.state?.boardMemo;
   const [disabled, setDisabled] = useState(false);
   const boardId = 1;
@@ -182,9 +180,7 @@ function Register() {
   function closePopUp(redirect) {
     setPopUpProps({ ...popupProps, open: false });
     if (redirect) {
-      navigate("/community", {
-        state: { isAdmin, myId },
-      });
+      navigate("/community");
     }
   }
 

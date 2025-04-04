@@ -1512,7 +1512,6 @@ function Schedule() {
           }}
           headerToolbar={null}
           eventContent={(info) => {
-            console.log(info);
             const start = info.event.startStr.split("T")[0];
             const end = info.event.endStr.split("T")[0];
             const isMultiDay = end && start !== end;
@@ -1726,7 +1725,6 @@ function Schedule() {
                           setIsGoal(true);
                           setScheduleReg(true);
                           setSchedule({
-                            ...schedule,
                             startDate: day,
                             endDate: day,
                           });
@@ -1743,7 +1741,6 @@ function Schedule() {
                         setIsGoal(false);
                         setScheduleReg(true);
                         setSchedule({
-                          ...schedule,
                           startDate: day,
                           endDate: day,
                         });

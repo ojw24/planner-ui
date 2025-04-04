@@ -167,14 +167,7 @@ export default function App() {
             exact
             path={route.route}
             element={
-              <route.component
-                isAdmin={
-                  route.key === "notifications" || route.key === "community"
-                    ? user.isAdmin
-                    : undefined
-                }
-                myId={route.key === "community" ? user.userId : undefined}
-              />
+              <route.component />
             }
             key={route.key}
           />

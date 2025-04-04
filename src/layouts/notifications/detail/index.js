@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 
+import Divider from "@mui/material/Divider";
 import Card from "@mui/material/Card";
-
-import MDBox from "../../../components/MDBox";
+import MDTypography from "components/MDTypography";
+import MDBox from "components/MDBox";
+import MDButton from "components/MDButton";
+import loading from "assets/images/loading.gif";
+import Confirm from "components/Confirm";
+import MDSnackbar from "components/MDSnackbar";
 
 import { deleteNotice, findNotice } from "../function";
-import MDTypography from "../../../components/MDTypography";
-import Divider from "@mui/material/Divider";
-import MDButton from "../../../components/MDButton";
-import loading from "../../../assets/images/loading.gif";
-import Confirm from "components/Confirm";
-import MDSnackbar from "../../../components/MDSnackbar";
+import * as commonFunc from "layouts/common/function";
 
 function Notification() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isAdmin = location.state?.isAdmin;
+  const queryParams = new URLSearchParams(location.search);
+  const isAdmin = commonFunc.parseJwt("isAdmin");
   const [disabled, setDisabled] = useState(false);
   const { noticeId } = useParams();
   const [notice, setNotice] = useState({
@@ -85,7 +86,7 @@ function Notification() {
   const handleClickUpdate = () => {
     setDisabled(true);
     navigate("/notifications/register", {
-      state: { isAdmin, notice },
+      state: { notice },
     });
   };
 
@@ -95,9 +96,7 @@ function Notification() {
     deleteNotice(noticeId)
       .then((res) => {
         handleClose();
-        navigate("/notifications", {
-          state: { isAdmin },
-        });
+        navigate("/notifications");
       })
       .catch((rej) => {
         handleClose();
@@ -159,7 +158,21 @@ function Notification() {
             variant="button"
             color="text"
             textGradient
-            onClick={() => window.history.back()} // 뒤로 가기
+            onClick={() => {
+              const page = queryParams.get("page");
+              const searchValue = queryParams.get("searchValue");
+
+              const queryObj = new URLSearchParams();
+
+              if (page) queryObj.append("page", page);
+              if (searchValue) queryObj.append("searchValue", searchValue);
+
+              const url = queryObj.toString()
+                ? `/notifications?${queryObj.toString()}`
+                : "/notifications";
+
+              navigate(url);
+            }} // 뒤로 가기
             sx={{
               fontFamily: "'Pretendard-Light', sans-serif",
               cursor: "pointer", // 마우스 호버 시 커서 변경
