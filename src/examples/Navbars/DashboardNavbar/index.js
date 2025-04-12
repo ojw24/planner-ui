@@ -79,7 +79,7 @@ function DashboardNavbar({ absolute, light, isMini, image, settings }) {
     async function connectMq() {
       const uuid = uuidv4();
       const res = await func.getMqConfig();
-      const wsUrl = `ws://${res.data.host}:${res.data.port}/ws`;
+      const wsUrl = `wss://${res.data.domain}/ws`;
       const ws = new WebSocket(wsUrl);
       const client = Stomp.over(ws);
 
@@ -100,10 +100,10 @@ function DashboardNavbar({ absolute, light, isMini, image, settings }) {
 
       const on_connect = function () {
         subscribeToExchange(client, "board" + uuid);
-        subscribeToExchange(client, "freind" + uuid);
+        subscribeToExchange(client, "friend" + uuid);
         subscribeToExchange(client, "schedule" + uuid);
         func.createBoardMQ("board" + uuid);
-        func.createFriendMQ("freind" + uuid);
+        func.createFriendMQ("friend" + uuid);
         func.createScheduleMQ("schedule" + uuid);
       };
     }
@@ -804,7 +804,7 @@ function DashboardNavbar({ absolute, light, isMini, image, settings }) {
               {profile ? (
                 <MDAvatar
                   id="profile"
-                  src={"/image" + profile}
+                  src={"/images/" + profile}
                   alt="profile-image"
                   sx={{
                     width: "1.75rem",

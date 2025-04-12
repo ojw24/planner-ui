@@ -81,10 +81,7 @@ export default function App() {
             isSchShareReqNoti: res.data.setting.isSchShareReqNoti,
             isCommentNoti: res.data.setting.isCommentNoti,
           },
-          file: {
-            attcFileId: res.data.file ? res.data.file.attcFileId : null,
-            path: res.data.file ? res.data.file.path : "",
-          },
+          file: res.data.file,
         }));
         setIsReady(true);
       });
@@ -162,16 +159,7 @@ export default function App() {
       }
 
       if (route.route) {
-        return (
-          <Route
-            exact
-            path={route.route}
-            element={
-              <route.component />
-            }
-            key={route.key}
-          />
-        );
+        return <Route exact path={route.route} element={<route.component />} key={route.key} />;
       }
 
       return null;
@@ -232,7 +220,10 @@ export default function App() {
         <ThemeProvider theme={theme}>
           {!isResetPwd ? (
             <DashboardLayout>
-              <DashboardNavbar image={user.file.path} settings={user.setting} />
+              <DashboardNavbar
+                image={user.file?.path ? user.file.path.split("/").pop() : ""}
+                settings={user.setting}
+              />
               <CssBaseline />
               <MDBox pt={isHalf ? 0 : 8}>
                 {layout === "dashboard" && (
@@ -248,7 +239,7 @@ export default function App() {
                     <Configurator
                       userId={user.userId}
                       settings={user.setting}
-                      attcFileId={user.file.attcFileId}
+                      attcFileId={user.file?.attcFileId ? user.file.attcFileId : null}
                     />
                     <Friend />
                   </>
@@ -258,7 +249,7 @@ export default function App() {
                     <Configurator
                       userId={user.userId}
                       settings={user.setting}
-                      attcFileId={user.file.attcFileId}
+                      attcFileId={user.file?.attcFileId ? user.file.attcFileId : null}
                     />
                     <Friend />
                   </>

@@ -31,7 +31,7 @@ export async function createBoardMQ(uuid) {
 export async function createFriendMQ(uuid) {
   return new Promise((resolve, reject) => {
     axios
-      .post(`/planner/api/schedule/mq?uuid=${uuid}`)
+      .post(`/planner/api/friend/mq?uuid=${uuid}`)
       .then((response) => {
         resolve(response.data);
       })
@@ -42,7 +42,7 @@ export async function createFriendMQ(uuid) {
 export async function createScheduleMQ(uuid) {
   return new Promise((resolve, reject) => {
     axios
-      .post(`/planner/api/friend/mq?uuid=${uuid}`)
+      .post(`/planner/api/schedule/mq?uuid=${uuid}`)
       .then((response) => {
         resolve(response.data);
       })
