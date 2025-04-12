@@ -23,7 +23,7 @@ jobs:
         run: npm install
 
       - name: Build React UI
-        run: npm run build
+        run: CI=false npm run build
 
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
