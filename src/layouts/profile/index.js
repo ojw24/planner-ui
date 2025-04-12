@@ -28,7 +28,7 @@ function Overview() {
     name: "",
     email: "",
     attcFileId: "",
-    file: "",
+    file: {},
   });
 
   const [popupProps, setPopUpProps] = useState({
@@ -46,7 +46,7 @@ function Overview() {
         name: res.data.name,
         email: res.data.email,
         attcFileId: res.data.file ? res.data.file.attcFileId : null,
-        file: res.data.file ? res.data.file.path : "",
+        file: res.data.file,
       });
     });
   }, []);
@@ -210,11 +210,34 @@ function Overview() {
     func
       .uploadFile({ name: file.name, file })
       .then((res) => {
-        setUser({
-          ...user,
-          file: "uploaded file",
+        const updateProfile = {
+          userId: user.userId,
           attcFileId: res.data,
-        });
+        };
+        func
+          .updateUser(updateProfile)
+          .then((res) => {
+            setPopUpProps({
+              ...popupProps,
+              open: true,
+              color: "success",
+              icon: "check",
+              title: "저장",
+              content: "프로필 저장에 성공했습니다.",
+            });
+          })
+          .catch((rej) => {
+            if (rej.response.data.message) {
+              setPopUpProps({
+                ...popupProps,
+                open: true,
+                icon: "warning",
+                color: "error",
+                title: "저장",
+                content: rej.response.data.message,
+              });
+            }
+          });
       })
       .catch((rej) => {
         if (rej.response.data.message) {
@@ -255,7 +278,10 @@ function Overview() {
               {user.file ? (
                 <MDAvatar
                   id="profile"
-                  src={imageSrc || "/image" + user.file}
+                  src={
+                    imageSrc ||
+                    (user.file?.path ? "/images/" + user.file.path.split("/").pop() : "no image")
+                  }
                   alt="profile-image"
                   sx={{
                     width: "10vw",
