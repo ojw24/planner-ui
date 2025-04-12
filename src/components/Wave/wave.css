@@ -1,0 +1,29 @@
+.wave {
+    position: absolute;
+    top: 10px;
+    background: rgba(3,169,244,0.8);
+    border-radius: 45%;
+    animation: move 10s infinite linear;
+}
+
+@keyframes move {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.wave-base {
+    height: 10px;
+    background: linear-gradient(#3c5aff, #52f2fd);
+    overflow: hidden;
+    transform: translate3d(0, 0, 0);
+}
+
+@keyframes rotateAnimation {
+    0% {
+        transform: rotate(-6.5deg);
+    }
+    100% {
+        transform: rotate(6.5deg);
+    }
+}
