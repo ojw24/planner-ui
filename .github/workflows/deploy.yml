@@ -1,0 +1,53 @@
+name: Deploy Workflow
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: Deploy Application
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build React UI
+        run: npm run build
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Build docker image
+        run: docker build -f docker/Dockerfile -t planner-ui:latest .
+
+      - name: Tag Docker image
+        run: docker tag planner-ui:latest ojw25/planner-ui:latest
+
+      - name: Push Docker image
+        run: docker push ojw25/planner-ui:latest
+
+      - name: Set up SSH key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > id_rsa
+          chmod 600 id_rsa
+
+      - name: SSH into server and run kubectl
+        run: |
+          ssh -i id_rsa -o StrictHostKeyChecking=no \
+            -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "${{ secrets.DEPLOY_COMMAND }}"
+
+      - name: Clean up SSH key
+        run: rm -f id_rsa
