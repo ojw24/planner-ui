@@ -80,32 +80,7 @@ function DashboardNavbar({ absolute, light, isMini, image, settings }) {
       const uuid = uuidv4();
       const res = await func.getMqConfig();
       const wsUrl = `wss://${res.data.domain}/ws`;
-      const ws = new WebSocket(wsUrl);
-      const client = Stomp.over(ws);
-
-      if (client.debug) client.debug = null;
-      try {
-        client.connect(
-          res.data.user,
-          res.data.password,
-          () => {
-            on_connect();
-          },
-          () => {
-            ws.close();
-          },
-          "/"
-        );
-      } catch (error) {}
-
-      const on_connect = function () {
-        subscribeToExchange(client, "board" + uuid);
-        subscribeToExchange(client, "friend" + uuid);
-        subscribeToExchange(client, "schedule" + uuid);
-        func.createBoardMQ("board" + uuid);
-        func.createFriendMQ("friend" + uuid);
-        func.createScheduleMQ("schedule" + uuid);
-      };
+      connectClient(res, wsUrl, uuid);
     }
 
     connectMq();
@@ -117,6 +92,35 @@ function DashboardNavbar({ absolute, light, isMini, image, settings }) {
     };
   }, []);
 
+  const connectClient = (res, wsUrl, uuid) => {
+    const ws = new WebSocket(wsUrl);
+    const client = Stomp.over(ws);
+
+    if (client.debug) client.debug = null;
+    try {
+      client.connect(
+        res.data.user,
+        res.data.password,
+        () => {
+          on_connect();
+        },
+        () => {
+          connectClient(res, wsUrl, uuid);
+        },
+        "/"
+      );
+    } catch (error) {}
+
+    const on_connect = function () {
+      subscribeToExchange(client, "board" + uuid);
+      subscribeToExchange(client, "friend" + uuid);
+      subscribeToExchange(client, "schedule" + uuid);
+      func.createBoardMQ("board" + uuid);
+      func.createFriendMQ("friend" + uuid);
+      func.createScheduleMQ("schedule" + uuid);
+    };
+  };
+
   // 구독을 위한 함수 호출
   const subscribeToExchange = async (client, uuid) => {
     try {
@@ -124,26 +128,32 @@ function DashboardNavbar({ absolute, light, isMini, image, settings }) {
       const destination = `/queue/${uuid}`; // uuid를 큐 이름으로 사용
 
       // 클라이언트가 해당 큐를 구독하도록 설정
-      client.subscribe(destination, (message) => {
-        if (message.body) {
-          // 수신한 메시지 처리
-          const parsedMessage = JSON.parse(message.body); // 문자열을 JSON 객체로 변환
-          // regDtm이 배열이라면 날짜 문자열로 변환
-          if (Array.isArray(parsedMessage.regDtm) && parsedMessage.regDtm.length === 6) {
-            const [year, month, day, hour, minute, second] = parsedMessage.regDtm;
-            parsedMessage.regDtm = `${year}-${String(month).padStart(2, "0")}-${String(
-              day
-            ).padStart(2, "0")}T${String(hour).padStart(2, "0")}:${String(minute).padStart(
-              2,
-              "0"
-            )}:${String(second).padStart(2, "0")}`;
-          }
+      client.subscribe(
+        destination,
+        (message) => {
+          if (message.body) {
+            // 수신한 메시지 처리
+            const parsedMessage = JSON.parse(message.body); // 문자열을 JSON 객체로 변환
+            // regDtm이 배열이라면 날짜 문자열로 변환
+            if (Array.isArray(parsedMessage.regDtm) && parsedMessage.regDtm.length === 6) {
+              const [year, month, day, hour, minute, second] = parsedMessage.regDtm;
+              parsedMessage.regDtm = `${year}-${String(month).padStart(2, "0")}-${String(
+                day
+              ).padStart(2, "0")}T${String(hour).padStart(2, "0")}:${String(minute).padStart(
+                2,
+                "0"
+              )}:${String(second).padStart(2, "0")}`;
+            }
 
-          setMessages((prev) =>
-            [...prev, parsedMessage].sort((a, b) => new Date(b.regDtm) - new Date(a.regDtm))
-          ); // 메시지 상태에 추가
+            setMessages((prev) =>
+              [...prev, parsedMessage].sort((a, b) => new Date(b.regDtm) - new Date(a.regDtm))
+            ); // 메시지 상태에 추가
+          }
+        },
+        {
+          "auto-delete": "true",
         }
-      });
+      );
 
       window.addEventListener("beforeunload", async () => {
         try {
@@ -206,9 +216,9 @@ function DashboardNavbar({ absolute, light, isMini, image, settings }) {
     }
 
     /**
-     The event listener that's calling the handleTransparentNavbar function when 
+     The event listener that's calling the handleTransparentNavbar function when
      scrolling the window.
-    */
+     */
     window.addEventListener("scroll", handleTransparentNavbar);
 
     // Call the handleTransparentNavbar function to set the state with the initial value.
