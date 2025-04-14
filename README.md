@@ -54,4 +54,5 @@
 </h2>
 <br /><br />
 
-✨ 서비스 이용중 버그, 기능 요청 등은 언제든 Issues에 작성해주시면 확인해보겠습니다.
+✨ 서비스 이용중 버그, 기능 요청 등은 언제든 Issues에 작성해주시면 확인해보겠습니다.<br />
+✨ 이 프로젝트는 <a href="https://www.creative-tim.com/product/material-dashboard-react">Material Dashboard 2 React</a>를 기반으로 작업되었습니다.
