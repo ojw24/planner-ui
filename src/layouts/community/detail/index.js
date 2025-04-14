@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 
 import Card from "@mui/material/Card";
@@ -137,7 +137,13 @@ function BoardMemo() {
     renderPage();
   }, []);
 
+  const isFirstRender = useRef(true);
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return; // 첫 렌더링일 때는 무시
+    }
+
     renderPage();
   }, [location.pathname]);
 

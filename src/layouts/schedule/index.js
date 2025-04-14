@@ -1244,7 +1244,17 @@ function Schedule() {
         goalFunc
           .createGoal(create)
           .then((res) => {
-            setMonthGoal(res.data);
+            const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
+            const monthParams = {
+              goalType: "goal_type_002",
+              searchDate: searchDate,
+              detail: false,
+            };
+
+            goalFunc.findGoalBy(monthParams).then((res) => {
+              setMonthGoal(res.data);
+            });
+
             setEdit(false);
           })
           .catch((rej) => {
