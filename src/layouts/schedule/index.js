@@ -19,6 +19,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
+import isYesterday from "dayjs/plugin/isYesterday";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import "dayjs/locale/ko";
 import { DesktopTimePicker } from "@mui/x-date-pickers";
 import SendIcon from "@mui/icons-material/Send";
@@ -44,8 +46,11 @@ import * as func from "./function";
 import * as freindFunc from "examples/Friend/function";
 import * as goalFunc from "layouts/goal/function";
 import * as Yup from "yup";
+import Switch from "@mui/material/Switch";
 
 dayjs.locale("ko");
+dayjs.extend(isYesterday);
+dayjs.extend(isSameOrAfter);
 
 function Schedule() {
   const today = new Date();
@@ -65,6 +70,7 @@ function Schedule() {
   const [disabled, setDisabled] = useState(false);
   const [schedule, setSchedule] = useState({
     name: "",
+    isAll: false,
   });
   const [popupProps, setPopUpProps] = useState({
     open: false,
@@ -344,6 +350,7 @@ function Schedule() {
             userName: item.userName,
             location: item.location,
             shared: item.shared,
+            isAll: item.isAll,
           },
         });
       });
@@ -368,6 +375,7 @@ function Schedule() {
               userName: child.schedule.userName,
               location: child.schedule.location,
               shared: child.schedule.shared,
+              isAll: child.schedule.isAll,
             },
           });
           setCheckedEvents((prevState) => ({
@@ -556,6 +564,7 @@ function Schedule() {
           ? info.event.endStr.split("T")[1].slice(0, 5)
           : info.event.startStr.split("T")[1].slice(0, 5),
         location: info.event.extendedProps.location,
+        isAll: info.event.extendedProps.isAll,
         shared: info.event.extendedProps.shared,
         userId: info.event.extendedProps.userId,
         userName: info.event.extendedProps.userName,
@@ -812,10 +821,10 @@ function Schedule() {
     } else if (!schedule.startDate) {
       formik.setFieldTouched("startDate", true);
       textRef.current[1]?.focus();
-    } else if (!schedule.startTime) {
+    } else if (!schedule.isAll && !schedule.startTime) {
       formik.setFieldTouched("startTime", true);
       textRef.current[2]?.focus();
-    } else if (!schedule.endTime) {
+    } else if (!schedule.isAll && !schedule.endTime) {
       formik.setFieldTouched("endTime", true);
       textRef.current[3]?.focus();
     } else if (schedule.startDate && schedule.endDate) {
@@ -829,23 +838,27 @@ function Schedule() {
           content: "시작일은 종료일 이전이어야 합니다.",
         });
       } else {
-        if (schedule.startTime && schedule.endTime) {
-          const startTime = dayjs(
-            `${schedule.startDate} ${schedule.startTime}`,
-            "YYYY-MM-DD HH:mm"
-          );
-          const endTime = dayjs(`${schedule.endDate} ${schedule.endTime}`, "YYYY-MM-DD HH:mm");
-          if (startTime.isAfter(endTime)) {
-            setPopUpProps({
-              ...popupProps,
-              open: true,
-              icon: "warning",
-              color: "warning",
-              title: "일정관리",
-              content: "시작 시간은 종료 시간 이전이어야 합니다.",
-            });
-          } else {
-            register();
+        if (schedule.isAll) {
+          register();
+        } else {
+          if (schedule.startTime && schedule.endTime) {
+            const startTime = dayjs(
+              `${schedule.startDate} ${schedule.startTime}`,
+              "YYYY-MM-DD HH:mm"
+            );
+            const endTime = dayjs(`${schedule.endDate} ${schedule.endTime}`, "YYYY-MM-DD HH:mm");
+            if (startTime.isSameOrAfter(endTime)) {
+              setPopUpProps({
+                ...popupProps,
+                open: true,
+                icon: "warning",
+                color: "warning",
+                title: "일정관리",
+                content: "시작 시간은 종료 시간 이전이어야 합니다.",
+              });
+            } else {
+              register();
+            }
           }
         }
       }
@@ -871,24 +884,26 @@ function Schedule() {
   }
 
   const register = () => {
+    const start = schedule.isAll ? "00:00" : schedule.startTime;
+    const end = schedule.isAll ? "23:59" : schedule.endTime;
+    const props = {
+      name: schedule.name,
+      startDtm: `${schedule.startDate}T${start}`,
+      endDtm: schedule.endDate ? `${schedule.endDate}T${end}` : `${schedule.startDate}T${end}`,
+      location: schedule.location,
+      isAll: schedule.isAll,
+    };
+
     if (create) {
       setDisabled(true);
-      const createProps = {
-        name: schedule.name,
-        startDtm: `${schedule.startDate}T${schedule.startTime}`,
-        endDtm: schedule.endDate
-          ? `${schedule.endDate}T${schedule.endTime}`
-          : `${schedule.startDate}T${schedule.endTime}`,
-        location: schedule.location,
-      };
       if (isGoal) {
         const create = {
           parentGoalId: monthGoal.goalId,
           name: schedule.name,
           goalType: "goal_type_003",
           startDate: schedule.startDate,
-          endDate: schedule.endDate,
-          schedule: createProps,
+          endDate: schedule.endDate ? schedule.endDate : schedule.startDate,
+          schedule: props,
         };
         goalFunc
           .createGoal(create)
@@ -919,7 +934,7 @@ function Schedule() {
             }
           });
       } else {
-        func.createSchedule(createProps).then((res) => {
+        func.createSchedule(props).then((res) => {
           setDisabled(false);
           handleModalClose();
           const searchDate = year + "-" + String(month + 1).padStart(2, "0") + "-" + "01";
@@ -932,22 +947,13 @@ function Schedule() {
       }
     } else {
       setDisabled(true);
-      const updateProps = {
-        name: schedule.name,
-        startDtm: `${schedule.startDate}T${schedule.startTime}`,
-        endDtm: schedule.endDate
-          ? `${schedule.endDate}T${schedule.endTime}`
-          : `${schedule.startDate}T${schedule.endTime}`,
-        location: schedule.location,
-      };
-
       if (isGoal) {
         const update = {
           goalId: schedule.goalId,
           name: schedule.name,
           startDate: schedule.startDate,
-          endDate: schedule.endDate,
-          schedule: updateProps,
+          endDate: schedule.endDate ? schedule.endDate : schedule.startDate,
+          schedule: props,
         };
         goalFunc
           .updateGoal(update)
@@ -984,7 +990,7 @@ function Schedule() {
           });
       } else {
         func
-          .updateSchedule(schedule.scheduleId, updateProps)
+          .updateSchedule(schedule.scheduleId, props)
           .then((res) => {
             setEvents((prevEvents) =>
               prevEvents.map((event) =>
@@ -1522,14 +1528,18 @@ function Schedule() {
           }}
           headerToolbar={null}
           eventContent={(info) => {
+            const startDay = dayjs(info.event.startStr);
+            const endDay = dayjs(info.event.endStr);
             const start = info.event.startStr.split("T")[0];
             const end = info.event.endStr.split("T")[0];
             const isMultiDay = end && start !== end;
+            const isNotMultiDay =
+              endDay.diff(startDay, "day") === 1 && endDay.hour() + endDay.minute() === 0;
             const isContinuedFromPreviousWeek = !info.isStart;
 
             return (
               <div style={{ display: "flex", alignItems: "center" }}>
-                {isMultiDay ? null : <div className="fc-daygrid-event-dot" />}
+                {isMultiDay && !isNotMultiDay ? null : <div className="fc-daygrid-event-dot" />}
                 <div
                   className={`fc-event-title ${isContinuedFromPreviousWeek ? "fc-sticky" : ""}`}
                   style={{
@@ -1816,6 +1826,33 @@ function Schedule() {
                 inputRef={(el) => (textRef.current[0] = el)}
               />
             </MDBox>
+            <MDBox
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                color: "inherit",
+              }}
+            >
+              <MDTypography
+                sx={{
+                  fontFamily: "Pretendard-light",
+                  fontSize: "0.75rem",
+                  color: "inherit",
+                }}
+              >
+                종일
+              </MDTypography>
+              <Switch
+                checked={Boolean(schedule.isAll)}
+                disabled={schedule.shared}
+                onChange={(e) =>
+                  setSchedule((prev) => ({
+                    ...prev,
+                    isAll: e.target.checked,
+                  }))
+                }
+              />
+            </MDBox>
             <MDTypography
               sx={{
                 fontFamily: "Pretendard-Light",
@@ -1867,52 +1904,56 @@ function Schedule() {
                 />
               </LocalizationProvider>
             </MDBox>
-            <MDTypography
-              sx={{
-                fontFamily: "Pretendard-Light",
-                fontSize: "0.75rem",
-                color: "inherit",
-              }}
-            >
-              시간 {schedule.shared ? "" : "*"}
-            </MDTypography>
-            <MDBox
-              mb={3}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en">
-                <DesktopTimePicker
-                  {...timeCore(formik, "startTime", setSchedule)}
-                  {...timePickerProps}
-                  readOnly={schedule.shared}
-                  value={
-                    schedule.startTime
-                      ? dayjs()
-                          .set("hour", Number(schedule.startTime.split(":")[0]))
-                          .set("minute", Number(schedule.startTime.split(":")[1]))
-                      : null
-                  }
-                  inputRef={(el) => (textRef.current[2] = el)}
-                />
-                <MDBox mx={1.5}>-</MDBox>
-                <DesktopTimePicker
-                  {...timeCore(formik, "endTime", setSchedule)}
-                  {...timePickerProps}
-                  readOnly={schedule.shared}
-                  value={
-                    schedule.endTime
-                      ? dayjs()
-                          .set("hour", Number(schedule.endTime.split(":")[0]))
-                          .set("minute", Number(schedule.endTime.split(":")[1]))
-                      : null
-                  }
-                  inputRef={(el) => (textRef.current[3] = el)}
-                />
-              </LocalizationProvider>
-            </MDBox>
+            {!schedule.isAll ? (
+              <>
+                <MDTypography
+                  sx={{
+                    fontFamily: "Pretendard-Light",
+                    fontSize: "0.75rem",
+                    color: "inherit",
+                  }}
+                >
+                  시간 {schedule.shared ? "" : "*"}
+                </MDTypography>
+                <MDBox
+                  mb={3}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en">
+                    <DesktopTimePicker
+                      {...timeCore(formik, "startTime", setSchedule)}
+                      {...timePickerProps}
+                      readOnly={schedule.shared}
+                      value={
+                        schedule.startTime
+                          ? dayjs()
+                              .set("hour", Number(schedule.startTime.split(":")[0]))
+                              .set("minute", Number(schedule.startTime.split(":")[1]))
+                          : null
+                      }
+                      inputRef={(el) => (textRef.current[2] = el)}
+                    />
+                    <MDBox mx={1.5}>-</MDBox>
+                    <DesktopTimePicker
+                      {...timeCore(formik, "endTime", setSchedule)}
+                      {...timePickerProps}
+                      readOnly={schedule.shared}
+                      value={
+                        schedule.endTime
+                          ? dayjs()
+                              .set("hour", Number(schedule.endTime.split(":")[0]))
+                              .set("minute", Number(schedule.endTime.split(":")[1]))
+                          : null
+                      }
+                      inputRef={(el) => (textRef.current[3] = el)}
+                    />
+                  </LocalizationProvider>
+                </MDBox>
+              </>
+            ) : null}
             <MDBox {...boxStyles}>
               <MDInput
                 {...inputStyles}
