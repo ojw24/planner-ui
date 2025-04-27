@@ -9,6 +9,7 @@ export async function createSchedule(props) {
         startDtm: props.startDtm,
         endDtm: props.endDtm,
         location: props.location,
+        isAll: props.isAll,
       })
       .then((response) => {
         resolve(response.data);
@@ -40,6 +41,7 @@ export async function updateSchedule(scheduleId, props) {
         startDtm: props.startDtm,
         endDtm: props.endDtm,
         location: props.location,
+        isAll: props.isAll,
       })
       .then((response) => {
         resolve(response.data);

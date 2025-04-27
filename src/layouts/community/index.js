@@ -75,7 +75,7 @@ function Community() {
             {item.title}
           </span>
         ),
-        writer: item.userName + "(" + item.userId.slice(0, -3) + "***" + ")",
+        writer: item.userName + "(" + item.userId + ")",
         regDate: item.regDtm.split("T")[0],
       }));
       setRendering(false);
@@ -229,7 +229,7 @@ function Community() {
             {item.title}
           </span>
         ),
-        writer: item.userName + "(" + item.userId.slice(0, -3) + "***" + ")",
+        writer: item.userName + "(" + item.userId + ")",
         regDate: item.regDtm.split("T")[0],
       }));
       setRows(mappedData);
@@ -277,7 +277,7 @@ function Community() {
             {item.title}
           </span>
         ),
-        writer: item.userName + "(" + item.userId.slice(0, -3) + "***" + ")",
+        writer: item.userName + "(" + item.userId + ")",
         regDate: item.regDtm.split("T")[0],
       }));
       setRows(mappedData);
@@ -449,111 +449,113 @@ function Community() {
                 ) : (
                   <MDBox mb={1.5}></MDBox>
                 )}
-                <MDBox display="flex" alignItems="center" justifyContent="center" gap="0.5rem">
-                  <MDBox
-                    sx={{
-                      width: "7.5rem",
-                      height: "2.4rem",
-                    }}
-                  >
-                    <FormControl fullWidth>
-                      <Select
-                        id="demo-simple-select"
-                        value={searchType}
-                        sx={{
-                          height: "2.4rem",
-                          fontFamily: "Pretendard-Regular",
-                          "& .MuiSelect-icon": {
-                            display: "block !important",
-                            width: "1.5rem",
-                            height: "1.5rem",
-                            top: "50%", // 아이콘을 정렬
-                            transform: "translateY(-50%)",
-                          },
-                          "& .MuiSelect-iconOpen": {
-                            transform: "translateY(-50%) rotate(180deg)", // 선택 시 아이콘 회전
-                          },
-                        }}
-                        MenuProps={{
-                          anchorOrigin: {
-                            vertical: "top", //기준 위치: Select의 아래쪽
-                            horizontal: "right", //기준 위치: Select의 왼쪽
-                          },
-                          transformOrigin: {
-                            vertical: "bottom", //드롭다운 메뉴가 시작되는 위치
-                            horizontal: "right",
-                          },
-                          disablePortal: true, // 항상 원래 위치에서 열리도록 강제
-                          PaperProps: {
-                            sx: {
-                              width: "7.5rem", //드롭다운 폭 조정
+                {searchType && searchType !== "uuid" ? (
+                  <MDBox display="flex" alignItems="center" justifyContent="center" gap="0.5rem">
+                    <MDBox
+                      sx={{
+                        width: "7.5rem",
+                        height: "2.4rem",
+                      }}
+                    >
+                      <FormControl fullWidth>
+                        <Select
+                          id="demo-simple-select"
+                          value={searchType}
+                          sx={{
+                            height: "2.4rem",
+                            fontFamily: "Pretendard-Regular",
+                            "& .MuiSelect-icon": {
+                              display: "block !important",
+                              width: "1.5rem",
+                              height: "1.5rem",
+                              top: "50%", // 아이콘을 정렬
+                              transform: "translateY(-50%)",
                             },
-                          },
-                        }}
-                        onChange={(e) => setSearchType(e.target.value)}
-                      >
-                        <MenuItem {...typeStyles} value="title">
-                          제목
-                        </MenuItem>
-                        <MenuItem {...typeStyles} value="name">
-                          작성자 이름
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
+                            "& .MuiSelect-iconOpen": {
+                              transform: "translateY(-50%) rotate(180deg)", // 선택 시 아이콘 회전
+                            },
+                          }}
+                          MenuProps={{
+                            anchorOrigin: {
+                              vertical: "top", //기준 위치: Select의 아래쪽
+                              horizontal: "right", //기준 위치: Select의 왼쪽
+                            },
+                            transformOrigin: {
+                              vertical: "bottom", //드롭다운 메뉴가 시작되는 위치
+                              horizontal: "right",
+                            },
+                            disablePortal: true, // 항상 원래 위치에서 열리도록 강제
+                            PaperProps: {
+                              sx: {
+                                width: "7.5rem", //드롭다운 폭 조정
+                              },
+                            },
+                          }}
+                          onChange={(e) => setSearchType(e.target.value)}
+                        >
+                          <MenuItem {...typeStyles} value="title">
+                            제목
+                          </MenuItem>
+                          <MenuItem {...typeStyles} value="name">
+                            작성자 이름
+                          </MenuItem>
+                        </Select>
+                      </FormControl>
+                    </MDBox>
+                    <MDInput
+                      {...inputStyles}
+                      type="text"
+                      name="searchValue"
+                      id="searchValue"
+                      onChange={(e) => {
+                        setSearchValue(e.target.value);
+                      }}
+                      value={searchValue}
+                      placeholder="검색어를 입력해주세요"
+                      onKeyDown={handleEnter}
+                    />
+                    <MDButton
+                      type="button"
+                      variant="gradient"
+                      color="info"
+                      sx={{
+                        fontFamily: "'Pretendard-Bold', sans-serif",
+                        fontSize: "0.9rem",
+                        lineHeight: 1,
+                        width: "5rem",
+                      }}
+                      disabled={disabled}
+                      onClick={search}
+                    >
+                      {disabled ? (
+                        <MDBox component="img" src={loading} alt="loading" width="1rem" />
+                      ) : (
+                        "검색"
+                      )}
+                    </MDButton>
+                    <MDButton
+                      type="submit"
+                      variant="gradient"
+                      color="info"
+                      sx={{
+                        fontFamily: "'Pretendard-Bold', sans-serif",
+                        fontSize: "0.9rem",
+                        lineHeight: 1,
+                        width: "5rem",
+                        position: "absolute",
+                        right: "3rem",
+                      }}
+                      disabled={disabled}
+                      onClick={handleRegister}
+                    >
+                      {disabled ? (
+                        <MDBox component="img" src={loading} alt="loading" width="1rem" />
+                      ) : (
+                        "등록"
+                      )}
+                    </MDButton>
                   </MDBox>
-                  <MDInput
-                    {...inputStyles}
-                    type="text"
-                    name="searchValue"
-                    id="searchValue"
-                    onChange={(e) => {
-                      setSearchValue(e.target.value);
-                    }}
-                    value={searchValue}
-                    placeholder="검색어를 입력해주세요"
-                    onKeyDown={handleEnter}
-                  />
-                  <MDButton
-                    type="button"
-                    variant="gradient"
-                    color="info"
-                    sx={{
-                      fontFamily: "'Pretendard-Bold', sans-serif",
-                      fontSize: "0.9rem",
-                      lineHeight: 1,
-                      width: "5rem",
-                    }}
-                    disabled={disabled}
-                    onClick={search}
-                  >
-                    {disabled ? (
-                      <MDBox component="img" src={loading} alt="loading" width="1rem" />
-                    ) : (
-                      "검색"
-                    )}
-                  </MDButton>
-                  <MDButton
-                    type="submit"
-                    variant="gradient"
-                    color="info"
-                    sx={{
-                      fontFamily: "'Pretendard-Bold', sans-serif",
-                      fontSize: "0.9rem",
-                      lineHeight: 1,
-                      width: "5rem",
-                      position: "absolute",
-                      right: "3rem",
-                    }}
-                    disabled={disabled}
-                    onClick={handleRegister}
-                  >
-                    {disabled ? (
-                      <MDBox component="img" src={loading} alt="loading" width="1rem" />
-                    ) : (
-                      "등록"
-                    )}
-                  </MDButton>
-                </MDBox>
+                ) : null}
               </>
             ) : (
               <>

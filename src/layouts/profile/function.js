@@ -15,7 +15,7 @@ export async function findMe() {
 export async function updateUser(props) {
   return new Promise((resolve, reject) => {
     axios
-      .put("/planner/api/user/" + props.userId, {
+      .put("/planner/api/user/" + props.uuid, {
         name: props.name,
         email: props.email,
         settingUpdateDto: props.setting,
