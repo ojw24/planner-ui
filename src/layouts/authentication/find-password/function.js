@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
 
-export async function FindPassword(id) {
+export async function FindPassword(props) {
   return new Promise((resolve, reject) => {
     axios
       .put(
@@ -9,7 +9,8 @@ export async function FindPassword(id) {
         {},
         {
           params: {
-            userId: id,
+            userId: props.id,
+            uuid: props.uuid,
           },
         }
       )

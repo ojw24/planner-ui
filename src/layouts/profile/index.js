@@ -25,6 +25,7 @@ function Overview() {
   const [disabled, setDisabled] = useState(false);
   const [user, setUser] = useState({
     userId: "",
+    uuid: "",
     name: "",
     email: "",
     attcFileId: "",
@@ -43,6 +44,7 @@ function Overview() {
     func.findMe().then((res) => {
       setUser({
         userId: res.data.userId,
+        uuid: res.data.uuid,
         name: res.data.name,
         email: res.data.email,
         attcFileId: res.data.file ? res.data.file.attcFileId : null,
@@ -167,7 +169,7 @@ function Overview() {
     e.preventDefault();
     setDisabled(true);
 
-    FindPassword(user.userId)
+    FindPassword({ uuid: user.uuid })
       .then((res) => {
         setDisabled(false);
         setPopUpProps({
@@ -212,6 +214,7 @@ function Overview() {
       .then((res) => {
         const updateProfile = {
           userId: user.userId,
+          uuid: user.uuid,
           attcFileId: res.data,
         };
         func
@@ -298,6 +301,7 @@ function Overview() {
                       transformOrigin: "center", // 확대 기준을 중앙으로 설정
                     },
                     display: "block",
+                    color: "#7B809A",
                   }}
                 />
               )}

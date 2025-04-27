@@ -70,7 +70,7 @@ function Cover() {
     } else {
       setDisabled(true);
       func
-        .FindPassword(checkId)
+        .FindPassword({ id: checkId })
         .then((res) => {
           setDisabled(false);
           setPopUpProps({

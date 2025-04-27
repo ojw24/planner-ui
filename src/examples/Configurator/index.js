@@ -28,7 +28,7 @@ import loading from "../../assets/images/loading.gif";
 import { updateUser } from "../../layouts/profile/function";
 import PropTypes from "prop-types";
 
-function Configurator({ userId, settings, attcFileId }) {
+function Configurator({ uuid, settings, attcFileId }) {
   const [controller, dispatch] = useMaterialUIController();
   const { openConfigurator, darkMode, ignore } = controller;
   const [disabled, setDisabled] = useState(false);
@@ -90,7 +90,7 @@ function Configurator({ userId, settings, attcFileId }) {
     e.preventDefault();
     setDisabled(true);
 
-    updateUser({ userId, setting, attcFileId })
+    updateUser({ uuid, setting, attcFileId })
       .then((res) => {
         setDisabled(false);
         settings.isFriendReqNoti = setting.isFriendReqNoti;
@@ -271,7 +271,7 @@ function Configurator({ userId, settings, attcFileId }) {
 }
 
 Configurator.defaultProps = {
-  userId: "",
+  uuid: "",
   settings: {
     isFriendReqNoti: false,
     isSchShareReqNoti: false,
@@ -281,7 +281,7 @@ Configurator.defaultProps = {
 };
 
 Configurator.propTypes = {
-  userId: PropTypes.string.isRequired,
+  uuid: PropTypes.string.isRequired,
   settings: PropTypes.object,
   attcFileId: PropTypes.number,
 };
