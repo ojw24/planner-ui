@@ -22,24 +22,31 @@ import loading from "assets/images/loading.gif";
 import Confirm from "components/Confirm";
 import MDSnackbar from "components/MDSnackbar";
 import { FirstPage, LastPage } from "@mui/icons-material";
-import { Pagination, PaginationItem } from "@mui/material";
+import { Menu, MenuItem, Pagination, PaginationItem } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import * as commonFunc from "../../common/function";
+import MDAvatar from "../../../components/MDAvatar";
+import Icon from "@mui/material/Icon";
+import ClickAwayListener from "@mui/base/ClickAwayListener";
 
 function BoardMemo() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const isAdmin = commonFunc.parseJwt("isAdmin");
-  const myId = commonFunc.parseJwt("id");
+  const myId = commonFunc.parseJwt("uuid");
+  const [uuid, setUuid] = useState(null);
   const [render, setRender] = useState(false);
   const [disabled, setDisabled] = useState(false);
+  const [contextMenu, setContextMenu] = useState(null);
   const boardId = 1;
   const { boardMemoId } = useParams();
   const [boardMemo, setBoardMemo] = useState({
     boardMemoId: boardMemoId,
     userId: "",
+    userUuid: "",
     userName: "",
+    profile: "",
     title: "",
     content: "",
     hit: 0,
@@ -96,7 +103,9 @@ function BoardMemo() {
         setBoardMemo({
           ...boardMemo,
           userId: res.data.userId,
+          userUuid: res.data.userUuid,
           userName: res.data.userName,
+          profile: res.data.profile,
           title: res.data.title,
           content: res.data.content,
           hit: res.data.hit,
@@ -108,7 +117,9 @@ function BoardMemo() {
           const mappedData = cRes.data.content.map((item) => ({
             boardCommentId: item.boardCommentId,
             userId: item.userId,
+            userUuid: item.userUuid,
             userName: item.userName,
+            profile: item.profile,
             content: item.content,
             regDtm: item.regDtm.replace("T", " "),
             updtDtm: item.updtDtm ? item.updtDtm.replace("T", " ") : '"',
@@ -178,7 +189,9 @@ function BoardMemo() {
                 const mappedData = cRes.data.content.map((item) => ({
                   boardCommentId: item.boardCommentId,
                   userId: item.userId,
+                  userUuid: item.userUuid,
                   userName: item.userName,
+                  profile: item.profile,
                   content: item.content,
                   regDtm: item.regDtm.replace("T", " "),
                   updtDtm: item.updtDtm ? item.updtDtm.replace("T", " ") : '"',
@@ -255,7 +268,9 @@ function BoardMemo() {
           const mappedData = cRes.data.content.map((item) => ({
             boardCommentId: item.boardCommentId,
             userId: item.userId,
+            userUuid: item.userUuid,
             userName: item.userName,
+            profile: item.profile,
             content: item.content,
             regDtm: item.regDtm.replace("T", " "),
             updtDtm: item.updtDtm ? item.updtDtm.replace("T", " ") : '"',
@@ -281,7 +296,9 @@ function BoardMemo() {
           const mappedData = cRes.data.content.map((item) => ({
             boardCommentId: item.boardCommentId,
             userId: item.userId,
+            userUuid: item.userUuid,
             userName: item.userName,
+            profile: item.profile,
             content: item.content,
             regDtm: item.regDtm.replace("T", " "),
             updtDtm: item.updtDtm ? item.updtDtm.replace("T", " ") : '"',
@@ -446,7 +463,9 @@ function BoardMemo() {
           const mappedData = cRes.data.content.map((item) => ({
             boardCommentId: item.boardCommentId,
             userId: item.userId,
+            userUuid: item.userUuid,
             userName: item.userName,
+            profile: item.profile,
             content: item.content,
             regDtm: item.regDtm.replace("T", " "),
             updtDtm: item.updtDtm ? item.updtDtm.replace("T", " ") : '"',
@@ -477,7 +496,9 @@ function BoardMemo() {
           const mappedData = cRes.data.content.map((item) => ({
             boardCommentId: item.boardCommentId,
             userId: item.userId,
+            userUuid: item.userUuid,
             userName: item.userName,
+            profile: item.profile,
             content: item.content,
             regDtm: item.regDtm.replace("T", " "),
             updtDtm: item.updtDtm ? item.updtDtm.replace("T", " ") : '"',
@@ -504,7 +525,9 @@ function BoardMemo() {
           const mappedData = cRes.data.content.map((item) => ({
             boardCommentId: item.boardCommentId,
             userId: item.userId,
+            userUuid: item.userUuid,
             userName: item.userName,
+            profile: item.profile,
             content: item.content,
             regDtm: item.regDtm.replace("T", " "),
             updtDtm: item.updtDtm ? item.updtDtm.replace("T", " ") : '"',
@@ -527,7 +550,9 @@ function BoardMemo() {
           const mappedData = cRes.data.content.map((item) => ({
             boardCommentId: item.boardCommentId,
             userId: item.userId,
+            userUuid: item.userUuid,
             userName: item.userName,
+            profile: item.profile,
             content: item.content,
             regDtm: item.regDtm.replace("T", " "),
             updtDtm: item.updtDtm ? item.updtDtm.replace("T", " ") : '"',
@@ -555,7 +580,9 @@ function BoardMemo() {
           const mappedData = cRes.data.content.map((item) => ({
             boardCommentId: item.boardCommentId,
             userId: item.userId,
+            userUuid: item.userUuid,
             userName: item.userName,
+            profile: item.profile,
             content: item.content,
             regDtm: item.regDtm.replace("T", " "),
             updtDtm: item.updtDtm ? item.updtDtm.replace("T", " ") : '"',
@@ -595,9 +622,38 @@ function BoardMemo() {
                 fontFamily: "Pretendard-Light",
                 fontSize: "1rem",
                 marginBottom: 0.5,
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+              }}
+              onClick={(e) => {
+                handleContextMenu(e, "profile");
+                setUuid(comment.userUuid);
               }}
             >
-              <b>{comment.userName + "(" + comment.userId.slice(0, -3) + "***" + ")"}</b>
+              {comment.profile ? (
+                <MDAvatar
+                  id="profile"
+                  src={"/images/" + comment.profile}
+                  alt="profile-image"
+                  sx={{
+                    width: "1.4rem",
+                    height: "1.4rem",
+                  }}
+                  shadow="sm"
+                />
+              ) : (
+                <Icon
+                  sx={{
+                    fontSize: "1.4rem !important",
+                    color: "#7B809A",
+                  }}
+                >
+                  account_circle
+                </Icon>
+              )}
+              &nbsp;
+              <b>{comment.userName + "(" + comment.userId + ")"}</b>
             </MDTypography>
             <TextField
               {...editInputStyles(comment)}
@@ -627,9 +683,43 @@ function BoardMemo() {
                   justifyContent: "space-between",
                 }}
               >
-                <b>{comment.userName + "(" + comment.userId.slice(0, -3) + "***" + ")"}</b>
+                <MDBox
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    cursor: "pointer",
+                  }}
+                  onClick={(e) => {
+                    handleContextMenu(e, "profile");
+                    setUuid(comment.userUuid);
+                  }}
+                >
+                  {comment.profile ? (
+                    <MDAvatar
+                      id="profile"
+                      src={"/images/" + comment.profile}
+                      alt="profile-image"
+                      sx={{
+                        width: "1.4rem",
+                        height: "1.4rem",
+                      }}
+                      shadow="sm"
+                    />
+                  ) : (
+                    <Icon
+                      sx={{
+                        fontSize: "1.4rem !important",
+                        color: "#7B809A",
+                      }}
+                    >
+                      account_circle
+                    </Icon>
+                  )}
+                  &nbsp;
+                  <b>{comment.userName + "(" + comment.userId + ")"}</b>
+                </MDBox>
                 <MDBox>
-                  {(isAdmin || myId === comment.userId) && !comment.isDeleted ? (
+                  {(isAdmin || myId === comment.userUuid) && !comment.isDeleted ? (
                     <>
                       <span {...spanStyle} onClick={() => handleEdit(comment)}>
                         수정
@@ -741,7 +831,9 @@ function BoardMemo() {
       const mappedData = cRes.data.content.map((item) => ({
         boardCommentId: item.boardCommentId,
         userId: item.userId,
+        userUuid: item.userUuid,
         userName: item.userName,
+        profile: item.profile,
         content: item.content,
         regDtm: item.regDtm.replace("T", " "),
         updtDtm: item.updtDtm ? item.updtDtm.replace("T", " ") : '"',
@@ -767,6 +859,51 @@ function BoardMemo() {
     gotoPage(newPage);
   };
 
+  const handleContextMenu = (event, type) => {
+    event.preventDefault(); // 기본 우클릭 메뉴 방지
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      open: true,
+      type, // 우클릭한 요소의 타입 저장
+    });
+  };
+
+  const handleClickAwayContext = (e) => {
+    if (contextMenu?.open) {
+      handleRightMenuClose();
+    }
+  };
+
+  const handleRightMenuClose = () => {
+    setContextMenu(null);
+  };
+
+  const itemStyle = {
+    sx: {
+      fontFamily: "Pretendard-Light",
+      fontSize: "0.9rem",
+      width: "4.5rem !important",
+      maxWidth: "4.5rem !important",
+      minWidth: "4.5rem !important",
+      display: "flex",
+      justifyContent: "center",
+      paddingX: "0.5rem",
+      paddingY: "0",
+    },
+  };
+
+  const searchWrittens = () => {
+    const queryObj = new URLSearchParams();
+
+    queryObj.append("searchType", "uuid");
+    queryObj.append("searchValue", uuid);
+
+    const url = queryObj.toString() ? `/community?${queryObj.toString()}` : "/community";
+
+    navigate(url);
+  };
+
   return (
     <>
       <MDBox mb={2} />
@@ -785,11 +922,52 @@ function BoardMemo() {
             <MDTypography sx={{ fontFamily: "Pretendard-Bold", fontSize: "2rem" }}>
               {boardMemo.title}
             </MDTypography>
-            <MDTypography sx={{ fontFamily: "Pretendard-Light", fontSize: "1rem" }}>
+            <MDTypography
+              sx={{
+                fontFamily: "Pretendard-Light",
+                fontSize: "1rem",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
               {boardMemo.regDtm}
               &nbsp;&nbsp;
-              <b>{boardMemo.userName + "(" + boardMemo.userId.slice(0, -3) + "***" + ")"}</b>
-              &nbsp;&nbsp;조회수 <b>{boardMemo.hit}</b>
+              <MDBox
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+                onClick={(e) => {
+                  handleContextMenu(e, "profile");
+                  setUuid(boardMemo.userUuid);
+                }}
+              >
+                {boardMemo.profile ? (
+                  <MDAvatar
+                    id="profile"
+                    src={"/images/" + boardMemo.profile}
+                    alt="profile-image"
+                    sx={{
+                      width: "1.4rem",
+                      height: "1.4rem",
+                    }}
+                    shadow="sm"
+                  />
+                ) : (
+                  <Icon
+                    sx={{
+                      fontSize: "1.4rem !important",
+                      color: "#7B809A",
+                    }}
+                  >
+                    account_circle
+                  </Icon>
+                )}
+                &nbsp;
+                <b>{boardMemo.userName + "(" + boardMemo.userId + ")"}</b>
+              </MDBox>
+              &nbsp;&nbsp;조회수&nbsp;<b>{boardMemo.hit}</b>
             </MDTypography>
             <Divider sx={dividerStyles} />
             <MDTypography
@@ -961,7 +1139,7 @@ function BoardMemo() {
           >
             &lt;&nbsp;목록으로
           </MDTypography>
-          {isAdmin || myId === boardMemo.userId ? (
+          {isAdmin || myId === boardMemo.userUuid ? (
             <>
               <MDButton
                 type="button"
@@ -1008,6 +1186,63 @@ function BoardMemo() {
           )}
         </MDBox>
       </MDBox>
+      {contextMenu?.open ? (
+        <ClickAwayListener onClickAway={handleClickAwayContext}>
+          <Menu
+            open={contextMenu?.open}
+            onClose={handleClose}
+            anchorReference="anchorPosition"
+            anchorPosition={{ top: contextMenu.y, left: contextMenu.x }}
+            onContextMenu={(event) => {
+              event.preventDefault(); // `Menu` 내부에서 기본 우클릭 방지
+              event.stopPropagation();
+            }}
+            sx={{
+              width: "0",
+            }}
+            PaperProps={{
+              style: {
+                transform: contextMenu?.open ? "translateY(0)" : "translateY(-20px)",
+                width: "auto", // Menu width
+                minWidth: "5.5rem",
+              },
+            }}
+            slotProps={{
+              backdrop: {
+                sx: {
+                  width: "0",
+                },
+              },
+            }}
+          >
+            {(() => {
+              switch (contextMenu.type) {
+                case "profile":
+                  return [
+                    <MenuItem
+                      {...itemStyle}
+                      key="profile"
+                      onClick={() => {
+                        handleRightMenuClose();
+                        searchWrittens();
+                      }}
+                    >
+                      작성글 보기
+                    </MenuItem>,
+                  ];
+                default:
+                  return [
+                    <MenuItem key="default-item" onClick={handleClose}>
+                      none
+                    </MenuItem>,
+                  ];
+              }
+            })()}
+          </Menu>
+        </ClickAwayListener>
+      ) : (
+        <></>
+      )}
       <Confirm
         title="정말 삭제하시겠습니까?"
         open={open}

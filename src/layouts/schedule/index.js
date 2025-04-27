@@ -43,7 +43,7 @@ import MDSnackbar from "components/MDSnackbar";
 import Confirm from "components/Confirm";
 
 import * as func from "./function";
-import * as freindFunc from "examples/Friend/function";
+import * as friendFunc from "examples/Friend/function";
 import * as goalFunc from "layouts/goal/function";
 import * as Yup from "yup";
 import Switch from "@mui/material/Switch";
@@ -1109,9 +1109,9 @@ function Schedule() {
   };
 
   const handleClickShare = () => {
-    freindFunc.findFriendGroups().then((res) => {
+    friendFunc.findFriendGroups().then((res) => {
       setFriends(res.data.filter((item) => item.friends !== null).flatMap((item) => item.friends));
-      freindFunc.findFriends().then((res2) => {
+      friendFunc.findFriends().then((res2) => {
         setFriends((prev) => [...prev, ...res2.data]);
       });
     });
@@ -1990,12 +1990,7 @@ function Schedule() {
                     fontSize: "0.8rem",
                   }}
                 >
-                  {"공유자 : " +
-                    schedule.userName +
-                    "(" +
-                    schedule.userId.slice(0, -3) +
-                    "***" +
-                    ")"}
+                  {"공유자 : " + schedule.userName + "(" + schedule.userId + ")"}
                 </MDTypography>
                 <MDButton
                   {...btnStyles}
@@ -2089,7 +2084,7 @@ function Schedule() {
               {filteredFriends.map((f, idx) => {
                 return (
                   <MDBox
-                    key={"freindBox" + f.friendId}
+                    key={"friendBox" + f.friendId}
                     sx={{
                       marginY: "0.1rem",
                       cursor: "pointer",
@@ -2102,8 +2097,8 @@ function Schedule() {
                     }}
                     onClick={(e) => handleSelectFriend(e, f, idx)}
                   >
-                    <p key={"freindP" + f.friendId}>
-                      {f.friendUserName + "(" + f.friendUserId.slice(0, -3) + "***" + ")"}
+                    <p key={"friendP" + f.friendId}>
+                      {f.friendUserName + "(" + f.friendUserId + ")"}
                     </p>
                   </MDBox>
                 );
@@ -2182,7 +2177,7 @@ function Schedule() {
                           textOverflow: "ellipsis",
                         }}
                       >
-                        {s.requesterName + "(" + s.requesterId.slice(0, -3) + "***" + ")"}
+                        {s.requesterName + "(" + s.requesterId + ")"}
                         {"님이 '" + s.schedule.name + "' 일정을 공유하였습니다."}
                       </span>
                       <span>{"\u00A0\u00A0"}</span>

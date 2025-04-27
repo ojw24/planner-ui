@@ -47,14 +47,15 @@ export default function App() {
   const [isReady, setIsReady] = useState(false);
   const [user, setUser] = useState({
     userId: "",
+    uuid: "",
     name: "",
     email: "",
     isAdmin: false,
-    setting: {
+    /*setting: {
       isFriendReqNoti: false,
       isSchShareReqNoti: false,
       isCommentNoti: false,
-    },
+    },*/
     file: {
       attcFileId: null,
       path: "",
@@ -73,6 +74,7 @@ export default function App() {
         setUser((p) => ({
           ...p,
           userId: res.data.userId,
+          uuid: res.data.uuid,
           name: res.data.userId,
           email: res.data.userId,
           isAdmin: res.data.isAdmin,
@@ -237,7 +239,7 @@ export default function App() {
                       onMouseLeave={handleOnMouseLeave}
                     />
                     <Configurator
-                      userId={user.userId}
+                      uuid={user.uuid}
                       settings={user.setting}
                       attcFileId={user.file?.attcFileId ? user.file.attcFileId : null}
                     />
@@ -247,7 +249,7 @@ export default function App() {
                 {layout === "vr" && (
                   <>
                     <Configurator
-                      userId={user.userId}
+                      uuid={user.uuid}
                       settings={user.setting}
                       attcFileId={user.file?.attcFileId ? user.file.attcFileId : null}
                     />

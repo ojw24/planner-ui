@@ -172,7 +172,7 @@ function DashboardNavbar({ absolute, light, isMini, image, settings }) {
   }, [image]);
 
   useEffect(() => {
-    if (settings.isFriendReqNoti) {
+    if (settings.isFriendReqNoti !== undefined) {
       func.findFriendRequestNotifications().then((res) => {
         if (res.data) {
           setMessages((prevMessages) =>
@@ -184,7 +184,7 @@ function DashboardNavbar({ absolute, light, isMini, image, settings }) {
       });
     }
 
-    if (settings.isSchShareReqNoti) {
+    if (settings.isSchShareReqNoti !== undefined) {
       func.findScheduleShareRequestNotifications().then((res) => {
         if (res.data) {
           setMessages((prevMessages) =>
@@ -196,7 +196,7 @@ function DashboardNavbar({ absolute, light, isMini, image, settings }) {
       });
     }
 
-    if (settings.isCommentNoti) {
+    if (settings.isCommentNoti !== undefined) {
       func.findBoardCommentNotifications().then((res) => {
         if (res.data) {
           setMessages((prevMessages) =>
@@ -842,9 +842,9 @@ DashboardNavbar.defaultProps = {
   isMini: false,
   image: "",
   settings: {
-    isFriendReqNoti: false,
-    isSchShareReqNoti: false,
-    isCommentNoti: false,
+    //isFriendReqNoti: false,
+    //isSchShareReqNoti: false,
+    //isCommentNoti: false,
   },
 };
 

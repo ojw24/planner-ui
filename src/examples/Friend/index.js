@@ -907,11 +907,7 @@ function Friend() {
                                                 handleContextMenu(event, "friend");
                                               }}
                                             >
-                                              {f.friendUserName +
-                                                "(" +
-                                                f.friendUserId.slice(0, -3) +
-                                                "***" +
-                                                ")"}
+                                              {f.friendUserName + "(" + f.friendUserId + ")"}
                                             </p>
                                             <Confirm
                                               title={f.friendUserName + "을(를) 삭제하시겠습니까?"}
@@ -993,11 +989,7 @@ function Friend() {
                                       handleContextMenu(event, "friend");
                                     }}
                                   >
-                                    {f.friendUserName +
-                                      "(" +
-                                      f.friendUserId.slice(0, -3) +
-                                      "***" +
-                                      ")"}
+                                    {f.friendUserName + "(" + f.friendUserId + ")"}
                                   </p>
                                   <Confirm
                                     title={f.friendUserName + "을(를) 삭제하시겠습니까?"}
@@ -1118,7 +1110,7 @@ function Friend() {
                           }
                         }}
                       >
-                        {f.name + "(" + f.userId.slice(0, -3) + "***" + ")"}
+                        {f.name + "(" + f.userId + ")"}
                         {"\u00A0"}
                         {friendIds.includes(f.userId) ? (
                           <ListItemIcon
@@ -1182,7 +1174,7 @@ function Friend() {
                           transition: "background-color 0.5s ease-in-out",
                         }}
                       >
-                        {f.targetName + "(" + f.targetId.slice(0, -3) + "***" + ")"}
+                        {f.targetName + "(" + f.targetId + ")"}
                         {f.inbound ? (
                           <MDBox display="flex" gap="0.25rem">
                             <MDButton
