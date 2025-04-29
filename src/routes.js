@@ -50,6 +50,7 @@ import SignUp from "layouts/authentication/sign-up";
 import FindId from "layouts/authentication/find-id";
 import FindPassword from "layouts/authentication/find-password";
 import ResetPassword from "layouts/authentication/reset-password";
+import UserManage from "layouts/userManage";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
@@ -166,6 +167,14 @@ const routes = [
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/authentication/reset-password",
     component: ResetPassword,
+  },
+  {
+    type: "collapse",
+    name: "사용자관리",
+    key: "user-manage",
+    icon: <Icon fontSize="small">person</Icon>,
+    route: "/user-manage",
+    component: UserManage,
   },
 ];
 

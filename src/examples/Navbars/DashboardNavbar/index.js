@@ -51,9 +51,11 @@ import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
 import * as React from "react";
 
-import * as func from "./functions";
+import * as func from "./function";
 
 import MDAvatar from "components/MDAvatar";
+import * as commonFunc from "layouts/common/function";
+const isAdmin = commonFunc.parseJwt("isAdmin");
 
 function DashboardNavbar({ absolute, light, isMini, image, settings }) {
   const navigate = useNavigate();
@@ -614,7 +616,13 @@ function DashboardNavbar({ absolute, light, isMini, image, settings }) {
   };
 
   const getName = (allRoutes, key) => {
-    return key === "" ? "Dashboard" : allRoutes.find((route) => matchPath(route.route, key))?.name;
+    return key === ""
+      ? "Dashboard"
+      : key === "/user-manage"
+      ? isAdmin
+        ? allRoutes.find((route) => matchPath(route.route, key))?.name
+        : ""
+      : allRoutes.find((route) => matchPath(route.route, key))?.name;
   };
 
   const renderAccountMenu = () => (
