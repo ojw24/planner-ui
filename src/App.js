@@ -42,8 +42,10 @@ import ResetPassword from "./layouts/authentication/reset-password";
 import Interceptor from "layouts/common/Interceptor";
 
 import { findMe } from "./layouts/profile/function";
+import * as commonFunc from "layouts/common/function";
 
 export default function App() {
+  const isAdmin = commonFunc.parseJwt("isAdmin");
   const [isReady, setIsReady] = useState(false);
   const [user, setUser] = useState({
     userId: "",
@@ -161,7 +163,11 @@ export default function App() {
       }
 
       if (route.route) {
-        return <Route exact path={route.route} element={<route.component />} key={route.key} />;
+        if (route.route === "/user-manage" && !isAdmin) {
+          return <Route path="*" element={<Navigate to="/profile" />} key={route.key} />;
+        } else {
+          return <Route exact path={route.route} element={<route.component />} key={route.key} />;
+        }
       }
 
       return null;
@@ -175,7 +181,8 @@ export default function App() {
       .filter((route) => route.route.indexOf("/community/detail"))
       .filter((route) => route.route.indexOf("/community/register"))
       .filter((route) => route.route.indexOf("/notifications/detail"))
-      .filter((route) => route.route.indexOf("/notifications/register"));
+      .filter((route) => route.route.indexOf("/notifications/register"))
+      .filter((route) => (isAdmin ? true : !route.route.includes("/user-manage")));
 
   const [isHalf, setIsHalf] = useState(false);
 
