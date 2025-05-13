@@ -634,7 +634,7 @@ function BoardMemo() {
               {comment.profile ? (
                 <MDAvatar
                   id="profile"
-                  src={"/images/" + comment.profile}
+                  src={"/images/" + comment.profile.split("/").pop()}
                   alt="profile-image"
                   sx={{
                     width: "1.4rem",
@@ -697,7 +697,7 @@ function BoardMemo() {
                   {comment.profile ? (
                     <MDAvatar
                       id="profile"
-                      src={"/images/" + comment.profile}
+                      src={"/images/" + comment.profile.split("/").pop()}
                       alt="profile-image"
                       sx={{
                         width: "1.4rem",
@@ -946,7 +946,7 @@ function BoardMemo() {
                 {boardMemo.profile ? (
                   <MDAvatar
                     id="profile"
-                    src={"/images/" + boardMemo.profile}
+                    src={"/images/" + boardMemo.profile.split("/").pop()}
                     alt="profile-image"
                     sx={{
                       width: "1.4rem",
