@@ -758,7 +758,7 @@ function DashboardNavbar({ absolute, light, isMini, image, settings }) {
       color="inherit"
       sx={(theme) => ({
         ...navbar(theme, { transparentNavbar, absolute, light, darkMode }),
-        width: isMaximized ? "77rem" : isHalf ? "0" : "inherit",
+        width: isMaximized ? "calc(100% - 250px - 2rem)" : isHalf ? "0" : "inherit",
         mx: "1rem",
         mt: "0.25rem",
       })}
